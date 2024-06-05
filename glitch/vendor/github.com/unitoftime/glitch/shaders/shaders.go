@@ -1,8 +1,9 @@
 package shaders
 
 import (
-	"github.com/unitoftime/glitch"
 	_ "embed"
+
+	"github.com/unitoftime/glitch"
 )
 
 func VertexAttribute(name string, Type glitch.AttrType, swizzle glitch.SwizzleType) glitch.VertexAttr {
@@ -37,13 +38,13 @@ func VertexAttribute(name string, Type glitch.AttrType, swizzle glitch.SwizzleTy
 // }
 
 //go:embed sprite.vs
-var SpriteVertexShader string;
+var SpriteVertexShader string
 
 //go:embed sprite.fs
-var SpriteFragmentShader string;
+var SpriteFragmentShader string
 
 var SpriteShader = glitch.ShaderConfig{
-	VertexShader: SpriteVertexShader,
+	VertexShader:   SpriteVertexShader,
 	FragmentShader: SpriteFragmentShader,
 	VertexFormat: glitch.VertexFormat{
 		VertexAttribute("positionIn", glitch.AttrVec3, glitch.PositionXYZ),
@@ -58,10 +59,10 @@ var SpriteShader = glitch.ShaderConfig{
 }
 
 //go:embed minimap.fs
-var MinimapFragmentShader string;
+var MinimapFragmentShader string
 
 var MinimapShader = glitch.ShaderConfig{
-	VertexShader: SpriteVertexShader,
+	VertexShader:   SpriteVertexShader,
 	FragmentShader: MinimapFragmentShader,
 	VertexFormat: glitch.VertexFormat{
 		VertexAttribute("positionIn", glitch.AttrVec3, glitch.PositionXYZ),
@@ -76,10 +77,10 @@ var MinimapShader = glitch.ShaderConfig{
 }
 
 //go:embed subPixel.fs
-var SubPixelAntiAliased string;
+var SubPixelAntiAliased string
 
 var PixelArtShader = glitch.ShaderConfig{
-	VertexShader: PixelArtVert,
+	VertexShader:   PixelArtVert,
 	FragmentShader: SubPixelAntiAliased,
 	// FragmentShader: SubPixelAntiAliased,
 	VertexFormat: glitch.VertexFormat{
@@ -96,12 +97,13 @@ var PixelArtShader = glitch.ShaderConfig{
 }
 
 //go:embed pixel.vs
-var PixelArtVert string;
+var PixelArtVert string
+
 //go:embed pixel.fs
-var PixelArtFrag string;
+var PixelArtFrag string
 
 var PixelArtShader2 = glitch.ShaderConfig{
-	VertexShader: PixelArtVert,
+	VertexShader:   PixelArtVert,
 	FragmentShader: PixelArtFrag,
 	VertexFormat: glitch.VertexFormat{
 		VertexAttribute("positionIn", glitch.AttrVec3, glitch.PositionXYZ),
@@ -116,13 +118,13 @@ var PixelArtShader2 = glitch.ShaderConfig{
 }
 
 //go:embed mesh.vs
-var DiffuseVertexShader string;
+var DiffuseVertexShader string
 
 //go:embed flat.fs
-var DiffuseFragmentShader string;
+var DiffuseFragmentShader string
 
 var DiffuseShader = glitch.ShaderConfig{
-	VertexShader: DiffuseVertexShader,
+	VertexShader:   DiffuseVertexShader,
 	FragmentShader: DiffuseFragmentShader,
 	VertexFormat: glitch.VertexFormat{
 		VertexAttribute("positionIn", glitch.AttrVec3, glitch.PositionXYZ),
@@ -131,7 +133,7 @@ var DiffuseShader = glitch.ShaderConfig{
 		VertexAttribute("texCoordIn", glitch.AttrVec2, glitch.TexCoordXY),
 	},
 	UniformFormat: glitch.UniformFormat{
-		glitch.Attr{"model", glitch.AttrMat4},
+		{"model", glitch.AttrMat4},
 		glitch.Attr{"view", glitch.AttrMat4},
 		glitch.Attr{"projection", glitch.AttrMat4},
 

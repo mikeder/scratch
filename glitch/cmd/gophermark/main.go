@@ -21,8 +21,9 @@ import (
 )
 
 const (
-	width  = 1512 * 4
-	height = 982 * 4
+	width       = 1512 * 4
+	height      = 982 * 4
+	maxVelocity = 100
 )
 
 var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
@@ -133,6 +134,13 @@ func runGame() {
 			man[i].position[0] += man[i].velocity[0]
 			man[i].position[1] += man[i].velocity[1]
 
+			if man[i].velocity[0] < maxVelocity && man[i].velocity[1] < maxVelocity {
+				man[i].velocity[0] += rand.ExpFloat64() / 100
+				man[i].velocity[1] += rand.ExpFloat64() / 100
+			} else {
+				man[i] = NewMan()
+			}
+
 			if man[i].position[0] <= 0 || (man[i].position[0]+width/4) >= width {
 				man[i].velocity[0] = -man[i].velocity[0]
 				man[i].color.G = rand.Float64()
@@ -184,7 +192,7 @@ func runGame() {
 		geom.FillRect(geomRect)
 		// geomMesh.Draw(pass, glitch.Mat4Ident)
 
-		glitch.Clear(win, glitch.RGBA{0.1, 0.2, 0.3, 1.0})
+		glitch.Clear(win, glitch.RGBA{R: 0.1, G: 0.2, B: 0.3, A: 1.0})
 
 		pass.SetCamera2D(camera)
 		pass.Draw(win)
@@ -210,9 +218,9 @@ type Man struct {
 
 func NewMan() Man {
 	colors := []glitch.RGBA{
-		glitch.RGBA{R: 1, G: 1, B: 1, A: rand.ExpFloat64()},
-		glitch.RGBA{R: 0, G: 0, B: rand.ExpFloat64(), A: rand.ExpFloat64()},
-		glitch.RGBA{R: 0, G: rand.ExpFloat64(), B: rand.ExpFloat64(), A: rand.ExpFloat64()},
+		// glitch.RGBA{R: 1, G: 1, B: 1, A: rand.ExpFloat64()},
+		// glitch.RGBA{R: 0, G: 0, B: rand.ExpFloat64(), A: rand.ExpFloat64()},
+		// glitch.RGBA{R: 0, G: rand.ExpFloat64(), B: rand.ExpFloat64(), A: rand.ExpFloat64()},
 		glitch.RGBA{R: rand.ExpFloat64(), G: rand.ExpFloat64(), B: rand.ExpFloat64(), A: rand.ExpFloat64()},
 	}
 	randIndex := rand.Intn(len(colors))

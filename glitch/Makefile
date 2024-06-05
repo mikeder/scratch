@@ -3,15 +3,13 @@ wasm:
 #   cp "$(go env GOROOT)/misc/wasm/wasm_exec.js" .
 	GOOS=js GOARCH=wasm go build -ldflags "-s" -o ./bin/gophermark.wasm cmd/gophermark/main.go
 
-windows:
-	env GOOS=windows GOARCH=386 CGO_ENABLED=1 CXX=i686-w64-mingw32-g++ CC=i686-w64-mingw32-gcc go build -ldflags "-s" -v .
-
 compress:
-	ls -lh main.wasm
-	gzip -f --best -c main.wasm > main.wasm.gz
-	ls -lh main.wasm.gz
+	ls -lh ./bin/gophermark.wasm
+	gzip -f --best -c ./bin/gophermark.wasm > ./bin/gophermark.wasm.gz
+	ls -lh ./bin/gophermark.wasm
 
 serve:
-	serve
+	cp ./bin/gophermark.wasm ./cmd/server/assets/
+	go run cmd/server/server.go
 
 run: wasm compress serve
