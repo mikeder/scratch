@@ -23,7 +23,7 @@ cd glitch && make
 
 echo "Updating gh-pages branch"
 pwd
-cp -R server/assets/ ../public/
+cp -R ./cmd/server/assets/ ../public/
 cd ../public && git add --all && git commit -m "Publishing to gh-pages (publish.sh)"
 
 echo "Pushing to github"
