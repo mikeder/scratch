@@ -2,7 +2,7 @@ module github.com/mikeder/scratchygo/glitch
 
 go 1.22.3
 
-require github.com/unitoftime/glitch v0.0.0-20240528180341-000475d9eec2
+require github.com/unitoftime/glitch v0.0.0-20240606090814-f0e9d87aff40
 
 require (
 	github.com/go-gl/gl v0.0.0-20231021071112-07e5d0ea2e71 // indirect

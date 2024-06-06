@@ -19,7 +19,7 @@ github.com/go-gl/mathgl/mgl64
 ## explicit
 github.com/golang/freetype/raster
 github.com/golang/freetype/truetype
-# github.com/unitoftime/glitch v0.0.0-20240528180341-000475d9eec2
+# github.com/unitoftime/glitch v0.0.0-20240606090814-f0e9d87aff40
 ## explicit; go 1.21
 github.com/unitoftime/glitch
 github.com/unitoftime/glitch/internal/gl
