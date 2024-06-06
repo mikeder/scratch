@@ -173,11 +173,11 @@ func runGame() {
 			man[i].position[0] += man[i].velocity[0]
 			man[i].position[1] += man[i].velocity[1]
 
-			if man[i].position[0]-(spriteW/2) <= 0 || (man[i].position[0]+(spriteW/2)) >= width {
+			if man[i].position[0]-(spriteW/2*.8) <= 0 || (man[i].position[0]+(spriteW/2*.8)) >= width {
 				man[i].velocity[0] = -man[i].velocity[0]
 				man[i].color = randColor()
 			}
-			if man[i].position[1]-(spriteH/2) <= 0 || (man[i].position[1]+(spriteH/2)) >= height {
+			if man[i].position[1]-(spriteH/2*.8) <= 0 || (man[i].position[1]+(spriteH/2*.8)) >= height {
 				man[i].velocity[1] = -man[i].velocity[1]
 				man[i].color = randColor()
 			}
