@@ -1,10 +1,10 @@
 #!/bin/sh
 
-if [ "`git status -s`" ]
-then
-    echo "The working directory is dirty. Please commit any pending changes."
-    exit 1;
-fi
+# if [ "`git status -s`" ]
+# then
+#     echo "The working directory is dirty. Please commit any pending changes."
+#     exit 1;
+# fi
 
 echo "Deleting old publication"
 rm -rf public
@@ -22,6 +22,7 @@ echo "Generating Pages"
 cd glitch && make
 
 echo "Updating gh-pages branch"
+pwd
 cp -R ./server/assets/ ../public/
 cd ../public && git add --all && git commit -m "Publishing to gh-pages (publish.sh)"
 
