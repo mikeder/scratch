@@ -1,7 +1,11 @@
+.DEFAULT_GOAL = wasm
 
-wasm:
-#   cp "$(go env GOROOT)/misc/wasm/wasm_exec.js" .
+wasm_exec.js:
+	cp "$(shell go env GOROOT)/misc/wasm/wasm_exec.js" ./cmd/server/assets/scripts/
+
+wasm: wasm_exec.js
 	GOOS=js GOARCH=wasm go build -ldflags "-s" -o ./bin/gophermark.wasm cmd/gophermark/main.go
+	cp ./bin/gophermark.wasm ./cmd/server/assets/
 
 compress:
 	ls -lh ./bin/gophermark.wasm
@@ -9,7 +13,6 @@ compress:
 	ls -lh ./bin/gophermark.wasm
 
 serve:
-	cp ./bin/gophermark.wasm ./cmd/server/assets/
 	go run cmd/server/server.go
 
 run: wasm compress serve

@@ -21,8 +21,8 @@ import (
 )
 
 const (
-	width       = 1512 * 4
-	height      = 982 * 4
+	width       = 1512
+	height      = 982
 	maxVelocity = 100
 )
 
@@ -125,10 +125,6 @@ func runGame() {
 	start := time.Now()
 	var dt time.Duration
 
-	geom := glitch.NewGeomDraw()
-	geomRect := glitch.R(-16, -16, 16, 16)
-	// geomMesh := glitch.NewQuadMesh(geomRect, geomRect)
-
 	updatePositions := func() {
 		for i := range man {
 			man[i].position[0] += man[i].velocity[0]
@@ -141,11 +137,11 @@ func runGame() {
 				man[i] = NewMan()
 			}
 
-			if man[i].position[0] <= 0 || (man[i].position[0]+width/4) >= width {
+			if man[i].position[0] <= 0 || (man[i].position[0]) >= width {
 				man[i].velocity[0] = -man[i].velocity[0]
 				man[i].color.G = rand.Float64()
 			}
-			if man[i].position[1] <= 0 || (man[i].position[1]+height/4) >= height {
+			if man[i].position[1] <= 0 || (man[i].position[1]) >= height {
 				man[i].velocity[1] = -man[i].velocity[1]
 				man[i].color.B = rand.Float64()
 			}
@@ -165,7 +161,7 @@ func runGame() {
 		pass.SetLayer(0)
 
 		camera.SetOrtho2D(win.Bounds())
-		camera.SetView2D((-width/100)/2, (-height/100)/2, 1.0, 1.0)
+		// camera.SetView2D(, 20, .5, .5)
 
 		counter = (counter + 1) % 60
 		if counter == 0 {
@@ -189,14 +185,21 @@ func runGame() {
 			// geomMesh.DrawColorMask(pass, mat, man[i].color)
 			// geom.DrawRect(pass, geomRect, mat, man[i].color)
 		}
-		geom.FillRect(geomRect)
+
+		// geom := glitch.NewGeomDraw()
+		// geom.FillRect(geomRect)
+
+		rect1 := glitch.NewGeomDraw().Rectangle(glitch.R(-1, -1, width-1, height-1), 4)
+		rect1.Draw(pass, glitch.Mat4Ident)
+
+		// geomRect := glitch.R(-16, -16, width-16, height-16)
+		// geomMesh := glitch.NewQuadMesh(geomRect, geomRect)
 		// geomMesh.Draw(pass, glitch.Mat4Ident)
 
 		glitch.Clear(win, glitch.RGBA{R: 0.1, G: 0.2, B: 0.3, A: 1.0})
 
 		pass.SetCamera2D(camera)
 		pass.Draw(win)
-
 		win.Update()
 
 		dt = time.Since(start)
