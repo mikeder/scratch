@@ -30,4 +30,5 @@ echo "Pushing to github"
 git push --all
 
 echo "Cleaning Up"
+cd ../
 rm -rf public
