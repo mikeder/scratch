@@ -21,9 +21,6 @@ import (
 )
 
 const (
-	width       = 1512
-	height      = 982
-	maxVelocity = 100
 	maxEntities = 5000
 )
 
@@ -80,13 +77,16 @@ func main() {
 }
 
 func runGame() {
-	win, err := glitch.NewWindow(width, height, "Glitch - Gophermark", glitch.WindowConfig{
+	win, err := glitch.NewWindow(0, 0, "Glitch - Gophermark", glitch.WindowConfig{
 		Fullscreen: true,
 		Vsync:      true,
 	})
 	if err != nil {
 		panic(err)
 	}
+
+	width := win.Bounds().W()
+	height := win.Bounds().H()
 
 	shader, err := glitch.NewShader(shaders.SpriteShader)
 	if err != nil {
@@ -115,7 +115,7 @@ func runGame() {
 			case <-done:
 				return
 			case <-ticker.C:
-				man = append(man, NewMan())
+				man = append(man, NewMan(win.Bounds().Center()))
 				if len(man) >= maxEntities {
 					man = make([]Man, 0)
 				}
@@ -138,8 +138,11 @@ func runGame() {
 	camera := glitch.NewCameraOrtho()
 	camera.DepthRange = glitch.Vec2{-127, 127}
 
-	start := time.Now()
+	camera.SetOrtho2D(win.Bounds())
+	camera.SetView2D(0, 0, .95, .95)
+
 	var dt time.Duration
+	var start time.Time
 
 	mat := glitch.Mat4Ident
 	for !win.Closed() {
@@ -152,19 +155,15 @@ func runGame() {
 		pass.Clear()
 		pass.SetLayer(0)
 
-		camera.SetOrtho2D(win.Bounds())
-		camera.SetView2D(0, 120, .8, .8)
-
 		counter = (counter + 1) % 60
 		if counter == 0 {
-			// text.Clear()
 			text.Set(fmt.Sprintf("Frame Time: %2.2f (%2.2f, %2.2f) ms\nEntities: %d",
 				1000*dt.Seconds(),
 				1000*min.Seconds(),
 				1000*max.Seconds(),
 				len(man)),
 			)
-			min = 100000000000
+			min = 1000 * 60
 			max = 0
 		}
 		text.DrawColorMask(pass, glitch.Mat4Ident, glitch.White)
@@ -174,11 +173,11 @@ func runGame() {
 			man[i].position[0] += man[i].velocity[0]
 			man[i].position[1] += man[i].velocity[1]
 
-			if man[i].position[0]-(spriteW/2) <= 0 || (man[i].position[0]+(spriteW/2)) >= width*2 {
+			if man[i].position[0]-(spriteW/2) <= 0 || (man[i].position[0]+(spriteW/2)) >= width {
 				man[i].velocity[0] = -man[i].velocity[0]
 				man[i].color = randColor()
 			}
-			if man[i].position[1]-(spriteH/2) <= 0 || (man[i].position[1]+(spriteH/2)) >= height*2 {
+			if man[i].position[1]-(spriteH/2) <= 0 || (man[i].position[1]+(spriteH/2)) >= height {
 				man[i].velocity[1] = -man[i].velocity[1]
 				man[i].color = randColor()
 			}
@@ -188,7 +187,7 @@ func runGame() {
 			manSprite.DrawColorMask(pass, mat, man[i].color)
 		}
 
-		rect1 := glitch.NewGeomDraw().Rectangle(glitch.R(0, 0, width*2, height*2), 2)
+		rect1 := glitch.NewGeomDraw().Rectangle(glitch.R(0, 0, width, height), 2)
 		rect1.SetColor(glitch.RGBA{R: 0, G: 1, B: 1, A: 1})
 		rect1.Draw(pass, glitch.Mat4Ident)
 
@@ -205,7 +204,6 @@ func runGame() {
 		if dt < min {
 			min = dt
 		}
-		// fmt.Println(dt.Seconds() * 1000)
 	}
 }
 
@@ -221,11 +219,10 @@ func randColor() glitch.RGBA {
 	}
 }
 
-func NewMan() Man {
+func NewMan(pos glitch.Vec2) Man {
 	vScale := 1.0
-	center := glitch.R(0, 0, width*2, height*2).Center()
 	return Man{
-		position: center,
+		position: pos,
 		velocity: glitch.Vec2{float64(2 * vScale * (rand.Float64() - 0.5)),
 			float64(2 * vScale * (rand.Float64() - 0.5))},
 		color: randColor(),
