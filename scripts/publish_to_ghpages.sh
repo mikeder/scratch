@@ -28,3 +28,6 @@ cd ../public && git add --all && git commit -m "Publishing to gh-pages (publish.
 
 echo "Pushing to github"
 git push --all
+
+echo "Cleaning Up"
+rm -rf public
