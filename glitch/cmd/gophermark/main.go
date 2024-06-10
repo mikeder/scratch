@@ -160,11 +160,16 @@ func runGame() {
 
 		// collect inputs
 		dir := glitch.Vec2{0, 0}
-		if win.Pressed(glitch.KeySpace) {
-			man = append(man, NewMan(win.Bounds().Center().Scaled(0.1)))
-			s.WriteString("Space")
+		if win.Pressed(glitch.MouseButton1) {
+			x, y := win.MousePosition()
+			man = append(man, NewMan(glitch.Vec2{x, y}))
+			s.WriteString("Mouse1")
 		}
 
+		if win.Pressed(glitch.KeyC) {
+			man = make([]Man, 0)
+			s.WriteString("C")
+		}
 		if win.Pressed(glitch.KeyA) {
 			dir.Sub(glitch.Vec2{-2, 0})
 			s.WriteString("A")
@@ -204,6 +209,7 @@ Input: %s`,
 
 		pass.SetLayer(1)
 		for i := range man {
+
 			man[i].position[0] += man[i].velocity[0]
 			man[i].position[1] += man[i].velocity[1]
 
