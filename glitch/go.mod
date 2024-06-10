@@ -4,7 +4,7 @@ go 1.22.3
 
 require (
 	github.com/unitoftime/ecs v0.0.1
-	github.com/unitoftime/glitch v0.0.0-20240606090814-f0e9d87aff40
+	github.com/unitoftime/glitch v0.0.0-20240608193243-c1d88380aaec
 )
 
 require (

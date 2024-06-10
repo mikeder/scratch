@@ -1,14 +1,15 @@
 .DEFAULT_GOAL = wasm
 
+build_targets := gophermark game
+
 wasm_exec.js:
 	cp "$(shell go env GOROOT)/misc/wasm/wasm_exec.js" ./cmd/server/assets/scripts/
 
 wasm: wasm_exec.js
-	GOOS=js GOARCH=wasm go build -ldflags "-s" -o ./bin/game.wasm cmd/game/main.go
-	cp ./bin/game.wasm ./cmd/server/assets/
-	
-	GOOS=js GOARCH=wasm go build -ldflags "-s" -o ./bin/gophermark.wasm cmd/gophermark/main.go
-	cp ./bin/gophermark.wasm ./cmd/server/assets/
+	$(foreach target,$(build_targets), \
+		GOOS=js GOARCH=wasm go build -ldflags "-s" -o ./bin/$(target).wasm cmd/$(target)/main.go; \
+		cp ./bin/$(target).wasm ./cmd/server/assets/; \
+	)
 
 compress:
 	ls -lh ./bin/gophermark.wasm

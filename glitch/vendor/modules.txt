@@ -26,13 +26,15 @@ github.com/unitoftime/cod/backend
 ## explicit; go 1.18
 github.com/unitoftime/ecs
 github.com/unitoftime/ecs/internal/intmap
-# github.com/unitoftime/glitch v0.0.0-20240606090814-f0e9d87aff40
+# github.com/unitoftime/glitch v0.0.0-20240608193243-c1d88380aaec
 ## explicit; go 1.21
 github.com/unitoftime/glitch
+github.com/unitoftime/glitch/graph
 github.com/unitoftime/glitch/internal/gl
 github.com/unitoftime/glitch/internal/glfw
 github.com/unitoftime/glitch/internal/mainthread
 github.com/unitoftime/glitch/shaders
+github.com/unitoftime/glitch/ui
 # golang.org/x/image v0.14.0
 ## explicit; go 1.18
 golang.org/x/image/font
