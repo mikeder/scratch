@@ -24,8 +24,7 @@ WebAssembly.instantiateStreaming(fetch(exampleName), go.importObject)
       await go.run(instance);
       // Note: Don't know why we need to reset the instance here. We don't seem use it again.
       instance = await WebAssembly.instantiate(module, go.importObject);
-      // Note: Logging the result here seems wrong.
-      console.log("Ran WASM:", result);
+
     } catch (error) {
       console.log("Failed to run WASM:", error);
     }
