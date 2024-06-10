@@ -14,10 +14,13 @@ import (
 	"os"
 	"runtime"
 	"runtime/pprof"
+	"strings"
 	"time"
 
 	"github.com/unitoftime/glitch"
 	"github.com/unitoftime/glitch/shaders"
+	// "github.com/unitoftime/mmo"
+	// "github.com/unitoftime/mmo"
 )
 
 const (
@@ -85,6 +88,7 @@ func runGame() {
 		panic(err)
 	}
 
+	// set window size
 	width := win.Bounds().W()
 	height := win.Bounds().H()
 
@@ -145,6 +149,8 @@ func runGame() {
 	var start time.Time
 
 	mat := glitch.Mat4Ident
+	s := new(strings.Builder)
+
 	for !win.Closed() {
 		if win.Pressed(glitch.KeyEscape) {
 			done <- true
@@ -152,17 +158,45 @@ func runGame() {
 		}
 		start = time.Now()
 
+		// collect inputs
+		dir := glitch.Vec2{0, 0}
+		if win.Pressed(glitch.KeySpace) {
+			man = append(man, NewMan(win.Bounds().Center().Scaled(0.1)))
+			s.WriteString("Space")
+		}
+
+		if win.Pressed(glitch.KeyA) {
+			dir.Sub(glitch.Vec2{-2, 0})
+			s.WriteString("A")
+		}
+		if win.Pressed(glitch.KeyD) {
+			dir.Sub(glitch.Vec2{2, 0})
+			s.WriteString("D")
+		}
+		if win.Pressed(glitch.KeyW) {
+			dir.Sub(glitch.Vec2{0, 2})
+			s.WriteString("W")
+		}
+		if win.Pressed(glitch.KeyS) {
+			dir.Sub(glitch.Vec2{0, -2})
+			s.WriteString("S")
+		}
+
 		pass.Clear()
 		pass.SetLayer(0)
 
-		counter = (counter + 1) % 60
+		counter = (counter + 1) % 10
 		if counter == 0 {
-			text.Set(fmt.Sprintf("Frame Time: %2.2f (%2.2f, %2.2f) ms\nEntities: %d",
+			text.Set(fmt.Sprintf(
+				`Frame Time: %2.2f (%2.2f, %2.2f) ms
+Entities: %d
+Input: %s`,
 				1000*dt.Seconds(),
 				1000*min.Seconds(),
 				1000*max.Seconds(),
-				len(man)),
-			)
+				len(man),
+				s.String(),
+			))
 			min = 1000 * 60
 			max = 0
 		}
@@ -196,6 +230,7 @@ func runGame() {
 		pass.SetCamera2D(camera)
 		pass.Draw(win)
 		win.Update()
+		s.Reset()
 
 		dt = time.Since(start)
 		if dt > max {
