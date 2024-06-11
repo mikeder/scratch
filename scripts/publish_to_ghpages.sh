@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set +x
+
 if [ "`git status -s`" ]
 then
     echo "The working directory is dirty. Please commit any pending changes."
@@ -23,8 +25,8 @@ make
 
 echo "Updating gh-pages branch"
 pwd
-cp -R ./server/assets/ ../public/
-cd ../public && git add --all && git commit -m "Publishing to gh-pages (publish.sh)"
+cp -R ./server/assets/ ./public/
+cd ./public/ && git add --all && git commit -m "Publishing to gh-pages (publish.sh)"
 
 echo "Pushing to github"
 git push --all
