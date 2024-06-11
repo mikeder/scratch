@@ -19,7 +19,7 @@ echo "Removing existing files"
 rm -rf public/*
 
 echo "Generating Pages"
-cd glitch && make
+make
 
 echo "Updating gh-pages branch"
 pwd
