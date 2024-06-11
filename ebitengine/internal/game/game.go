@@ -13,8 +13,8 @@ const (
 	GameStateMenu = iota
 	GameStatePlaying
 
-	ScreenWidth  = 800
-	ScreenHeight = 600
+	ScreenWidth  = 1024
+	ScreenHeight = 768
 )
 
 type Game struct {
@@ -55,6 +55,5 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	vector.DrawFilledRect(screen, 40+cf, 10+cf, 100+cf, 100+cf, color.RGBA{0x20, 0x80, 0x80, 5}, true)
 	vector.DrawFilledRect(screen, 50+cf, 50+cf, 100+cf, 100+cf, color.RGBA{0x90, 0x80, 0x80, 5}, true)
 
-	PrintDebugText(screen)
-
+	PrintDebugText(screen, g.keys)
 }
