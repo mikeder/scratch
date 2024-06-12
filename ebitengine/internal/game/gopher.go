@@ -65,7 +65,7 @@ func SpawnGophers(center vec2, world *ecs.World) {
 		g := NewGopher(id, pos)
 		world.Write(id, ecs.C(g))
 
-		fmt.Printf("spawn gopher: %+v", g)
+		fmt.Printf("spawn gopher: %+v\n", g)
 	default:
 		return
 	}
