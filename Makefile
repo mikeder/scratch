@@ -3,7 +3,7 @@
 build_targets := ebitengine glitch
 
 wasm_exec.js:
-	cp "$(shell go env GOROOT)/misc/wasm/wasm_exec.js" ./server/assets/scripts/
+	cp "$(shell go env GOROOT)/misc/wasm/wasm_exec.js" ./server/assets/shared/
 
 wasm: wasm_exec.js
 	$(foreach target,$(build_targets), \
@@ -19,7 +19,7 @@ compress:
 
 copy: wasm
 	$(foreach target,$(build_targets), \
-		cp ./bin/$(target).wasm ./server/assets/; \
+		cp ./bin/$(target).wasm ./server/assets/$(target)/; \
 	)
 
 serve:
