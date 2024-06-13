@@ -48,4 +48,6 @@ func ReadInputs(input *input) {
 		input.fire = false
 	}
 
+	cx, cy := ebiten.CursorPosition()
+	input.cursor = Vec2{float64(cx), float64(cy)}
 }

@@ -14,4 +14,8 @@ var (
 
 	//go:embed gopher.png
 	Gopher_png []byte
+	//go:embed gobullet1.png
+	GoBullet1_png []byte
+	//go:embed gobullet2.png
+	GoBullet2_png []byte
 )

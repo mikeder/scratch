@@ -1,7 +1,11 @@
 package game
 
 import (
+	"sync"
+	"time"
+
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hongshibao/go-kdtree"
 	"github.com/unitoftime/ecs"
 )
 
@@ -14,30 +18,36 @@ const (
 )
 
 type input struct {
-	up    bool
-	down  bool
-	left  bool
-	right bool
-	fire  bool
+	up     bool
+	down   bool
+	left   bool
+	right  bool
+	fire   bool
+	cursor Vec2
 }
 
 type Game struct {
 	center Vec2
+	dt     time.Duration
 	input  *input
 	op     *ebiten.DrawImageOptions
 	world  *ecs.World
 
 	// state
 	playerAdded bool
+	treeMux     *sync.RWMutex
+	tree        *kdtree.KDTree
 }
 
 var _ ebiten.Game = (*Game)(nil)
 
 func NewGame() *Game {
 	return &Game{
-		input: new(input),
-		op:    new(ebiten.DrawImageOptions),
-		world: ecs.NewWorld(),
+		input:   new(input),
+		op:      new(ebiten.DrawImageOptions),
+		treeMux: &sync.RWMutex{},
+		tree:    kdtree.NewKDTree(nil),
+		world:   ecs.NewWorld(),
 	}
 }
 
@@ -46,6 +56,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 }
 
 func (g *Game) Update() error {
+	start := time.Now()
 	if !g.playerAdded && g.center != Vec2Zero {
 		gid := g.world.NewId()
 		player := NewGopher(gid, g.center)
@@ -56,7 +67,14 @@ func (g *Game) Update() error {
 	ReadInputs(g.input)
 	SpawnCrabs(g.center, g.world)
 	MoveGopher(g.input, g.world)
+	SpawnBullets(g.center, g.input, g.world)
+	MoveBullets(g.world)
+	ExpireBullets(g.world)
+	// UpdateKDTree(g.treeMux, g.tree, g.world)
+	MoveCrabs(g.world)
+	KillCrabs(g.world)
 
+	g.dt = time.Since(start)
 	return nil
 }
 
@@ -69,4 +87,5 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	PrintDebugText(screen, g.input, g.world)
 	DrawCrabs(screen, g.op, g.world)
 	DrawGopher(screen, g.op, g.world)
+	DrawBullets(screen, g.op, g.world)
 }

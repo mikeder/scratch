@@ -11,6 +11,12 @@ import (
 func PrintDebugText(screen *ebiten.Image, input *input, world *ecs.World) {
 	q1 := ecs.Query1[Crab](world)
 	q2 := ecs.Query1[Gopher](world)
+	q3 := ecs.Query1[Bullet](world)
+
+	var bullets int
+	q3.MapId(func(_ ecs.Id, _ *Bullet) {
+		bullets++
+	})
 
 	var crabs int
 	q1.MapId(func(_ ecs.Id, _ *Crab) {
@@ -18,7 +24,9 @@ func PrintDebugText(screen *ebiten.Image, input *input, world *ecs.World) {
 	})
 
 	var gophers int
-	q2.MapId(func(_ ecs.Id, _ *Gopher) {
+	var dir Vec2
+	q2.MapId(func(_ ecs.Id, a *Gopher) {
+		dir = input.cursor.Sub(a.pos)
 		gophers++
 	})
 
@@ -26,11 +34,13 @@ func PrintDebugText(screen *ebiten.Image, input *input, world *ecs.World) {
 	tps := ebiten.ActualTPS()
 
 	txt := fmt.Sprintf(`
+Bullets: %d
 Crabs: %d
 Gophers: %d
-Input: %v
+Cursor: %v
+Dir: %v
 FPS: %0.2f
 TPS: %0.2f
-	`, crabs, gophers, input, fps, tps)
+	`, bullets, crabs, gophers, input.cursor, dir, fps, tps)
 	ebitenutil.DebugPrint(screen, txt)
 }
