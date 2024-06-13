@@ -18,15 +18,11 @@ var (
 )
 
 func init() {
-	img, _, err := image.Decode(bytes.NewReader(Gopher_png))
+	gopherPng, _, err := image.Decode(bytes.NewReader(Gopher_png))
 	if err != nil {
 		log.Fatal(err)
 	}
-	tmp := ebiten.NewImageFromImage(img)
-
-	s := tmp.Bounds().Size()
-	gopherImage = ebiten.NewImage(s.X, s.Y)
-	gopherImage.DrawImage(tmp, nil)
+	gopherImage = ebiten.NewImageFromImage(gopherPng)
 }
 
 type Gopher struct {

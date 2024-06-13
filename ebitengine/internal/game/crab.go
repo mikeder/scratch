@@ -2,7 +2,6 @@ package game
 
 import (
 	"bytes"
-	"fmt"
 	"image"
 	"log"
 	"math"
@@ -14,21 +13,28 @@ import (
 )
 
 var (
-	crabImage *ebiten.Image
-	ticker    *time.Ticker
+	crabImage1 *ebiten.Image
+	crabImage2 *ebiten.Image
+	crabImage3 *ebiten.Image
+	ticker     *time.Ticker
 )
 
 func init() {
-	img, _, err := image.Decode(bytes.NewReader(CrabWalk_png))
+	c1png, _, err := image.Decode(bytes.NewReader(Crab1_png))
 	if err != nil {
 		log.Fatal(err)
 	}
-	tmp := ebiten.NewImageFromImage(img)
-
-	s := tmp.Bounds().Size()
-	crabImage = ebiten.NewImage(s.X, s.Y)
-
-	crabImage.DrawImage(tmp, nil)
+	c2png, _, err := image.Decode(bytes.NewReader(Crab2_png))
+	if err != nil {
+		log.Fatal(err)
+	}
+	c3png, _, err := image.Decode(bytes.NewReader(Crab3_png))
+	if err != nil {
+		log.Fatal(err)
+	}
+	crabImage1 = ebiten.NewImageFromImage(c1png)
+	crabImage2 = ebiten.NewImageFromImage(c2png)
+	crabImage3 = ebiten.NewImageFromImage(c3png)
 
 	ticker = time.NewTicker(time.Millisecond * 20)
 }
@@ -41,9 +47,20 @@ type Crab struct {
 }
 
 func NewCrab(id ecs.Id, pos Vec2) Crab {
+	img := func() *ebiten.Image {
+		switch rand.Intn(3) {
+		case 0:
+			return crabImage1
+		case 1:
+			return crabImage2
+		default:
+			return crabImage3
+		}
+	}()
+
 	return Crab{
 		id:       id,
-		image:    crabImage,
+		image:    img,
 		pos:      pos,
 		velocity: Vec2{rand.Float64(), rand.Float64()},
 	}
@@ -56,8 +73,6 @@ func SpawnCrabs(center Vec2, world *ecs.World) {
 		id := world.NewId()
 		g := NewCrab(id, pos)
 		world.Write(id, ecs.C(g))
-
-		fmt.Printf("spawn crab: %+v\n", g)
 	default:
 		return
 	}
@@ -68,7 +83,7 @@ func DespawnCrabs(world *ecs.World) {
 
 	q.MapId(func(id ecs.Id, a *Crab) {
 		if ok := ecs.Delete(world, id); ok {
-			fmt.Print("deleted: ", id)
+			// fmt.Print("deleted: ", id)
 		}
 	})
 }
@@ -78,6 +93,7 @@ func DrawCrabs(screen *ebiten.Image, op *ebiten.DrawImageOptions, world *ecs.Wor
 
 	q.MapId(func(id ecs.Id, g *Crab) {
 		op.GeoM.Reset()
+		op.GeoM.Scale(0.5, 0.5)
 		op.GeoM.Translate(float64(g.pos.X), float64(g.pos.Y))
 		screen.DrawImage(g.image, op)
 	})
@@ -90,17 +106,3 @@ func randomPositionAround(pos Vec2, min, max float32) Vec2 {
 	offsetY := math.Sin(angle) * float64(dist)
 	return Vec2{pos.X + (offsetX), pos.Y + (offsetY)}
 }
-
-// fn random_position_around(pos: Vec2, min: f32, max: f32) -> (f32, f32) {
-//     let mut rng = rand::thread_rng();
-//     let angle = rng.gen_range(0.0..PI * 2.0);
-//     let dist = rng.gen_range(min..max);
-
-//     let offset_x = angle.cos() * dist;
-//     let offset_y = angle.sin() * dist;
-
-//     let random_x = pos.x + offset_x;
-//     let random_y = pos.y + offset_y;
-
-//     (random_x, random_y)
-// }
