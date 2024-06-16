@@ -128,13 +128,11 @@ func SpawnBullets(center Vec2, input *input, world *ecs.World) {
 		})
 
 		dir := pos.Sub(input.cursor).Clamp(Vec2{-360, -360}, Vec2{360, 360})
-		bid := world.NewId()
-		bullets := []ecs.Component{
-			ecs.C(NewBullet(bid, pos, dir)),
-			ecs.C(NewBullet(bid, pos, dir.Add(Vec2{0, 200}))),
-			ecs.C(NewBullet(bid, pos, dir.Add(Vec2{0, 40}))),
+		for i := range 1 {
+			f := float64(i) * 10
+			bid := world.NewId()
+			world.Write(bid, ecs.C(NewBullet(bid, pos, dir.Add(Vec2{f, f}))))
 		}
-		world.Write(bid, bullets...)
 	}
 }
 

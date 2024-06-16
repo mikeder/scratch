@@ -109,10 +109,10 @@ func (c Crab) PlaneDistance(val float64, dim int) float64 {
 func SpawnCrabs(center Vec2, world *ecs.World) {
 	select {
 	case <-crabSpawnTicker.C:
-		pos := randomPositionAround(center, 500, 1200)
-		id := world.NewId()
-		g := NewCrab(id, pos)
-		world.Write(id, ecs.C(g))
+		for range 2 {
+			id := world.NewId()
+			world.Write(id, ecs.C(NewCrab(id, randomPositionAround(center, 500, 1200))))
+		}
 	default:
 		return
 	}
