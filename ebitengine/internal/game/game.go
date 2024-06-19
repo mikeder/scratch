@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hongshibao/go-kdtree"
+	"github.com/kyroy/kdtree"
 	"github.com/unitoftime/ecs"
 )
 
@@ -46,7 +46,7 @@ func NewGame() *Game {
 		input:   new(input),
 		op:      new(ebiten.DrawImageOptions),
 		treeMux: &sync.RWMutex{},
-		tree:    kdtree.NewKDTree(nil),
+		tree:    kdtree.New(nil),
 		world:   ecs.NewWorld(),
 	}
 }
@@ -70,9 +70,9 @@ func (g *Game) Update() error {
 	SpawnBullets(g.center, g.input, g.world)
 	MoveBullets(g.world)
 	ExpireBullets(g.world)
-	// UpdateKDTree(g.treeMux, g.tree, g.world)
+	UpdateKDTree(g.treeMux, g.tree, g.world)
 	MoveCrabs(g.world)
-	KillCrabs(g.world)
+	KillCrabs(g.treeMux, g.tree, g.world)
 
 	g.dt = time.Since(start)
 	return nil

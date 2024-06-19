@@ -1,10 +1,3 @@
-# github.com/downflux/go-geometry v0.15.0
-## explicit; go 1.19
-# github.com/downflux/go-kd v1.0.5
-## explicit; go 1.19
-# github.com/dropbox/godropbox v0.0.0-20200228041828-52ad444d3502
-## explicit; go 1.13
-github.com/dropbox/godropbox/errors
 # github.com/ebitengine/gomobile v0.0.0-20240518074828-e86332849895
 ## explicit; go 1.18
 github.com/ebitengine/gomobile/app
@@ -90,18 +83,22 @@ github.com/hajimehoshi/ebiten/v2/internal/ui
 github.com/hajimehoshi/ebiten/v2/internal/vibrate
 github.com/hajimehoshi/ebiten/v2/internal/winver
 github.com/hajimehoshi/ebiten/v2/vector
-# github.com/hongshibao/go-algo v0.0.0-20160521171829-b1aaa26798b6
-## explicit
-github.com/hongshibao/go-algo
-# github.com/hongshibao/go-kdtree v0.0.0-20210101155139-60c46b3ef454
-## explicit; go 1.16
-github.com/hongshibao/go-kdtree
 # github.com/jezek/xgb v1.1.1
 ## explicit; go 1.11
 github.com/jezek/xgb
 github.com/jezek/xgb/randr
 github.com/jezek/xgb/render
 github.com/jezek/xgb/xproto
+# github.com/kyroy/kdtree v0.0.0-20200419114247-70830f883f1d
+## explicit; go 1.13
+github.com/kyroy/kdtree
+github.com/kyroy/kdtree/kdrange
+github.com/kyroy/kdtree/points
+# github.com/kyroy/priority-queue v0.0.0-20180327160706-6e21825e7e0c
+## explicit
+github.com/kyroy/priority-queue
+# github.com/stretchr/testify v1.6.1
+## explicit; go 1.13
 # github.com/unitoftime/cod v0.0.0-20230616173404-085cf4fe3918
 ## explicit; go 1.20
 github.com/unitoftime/cod/backend

@@ -6,10 +6,12 @@ import (
 	"log"
 	"math"
 	"math/rand"
+	"sync"
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hongshibao/go-kdtree"
+	"github.com/kyroy/kdtree"
+	"github.com/kyroy/kdtree/points"
 	"github.com/unitoftime/ecs"
 )
 
@@ -44,8 +46,6 @@ func init() {
 	crabSpawnTicker = time.NewTicker(time.Millisecond * 20)
 }
 
-var _ kdtree.Point = (Crab{})
-
 type Crab struct {
 	id       ecs.Id
 	image    *ebiten.Image
@@ -73,43 +73,10 @@ func NewCrab(id ecs.Id, pos Vec2) Crab {
 	}
 }
 
-// Return the total number of dimensions
-func (c Crab) Dim() int {
-	return 2
-}
-
-// Return the value X_{dim}, dim is started from 0
-func (c Crab) GetValue(dim int) float64 {
-	switch dim {
-	case 0:
-		return c.pos.X
-	case 1:
-		return c.pos.Y
-	default:
-		panic("unsupported dimension")
-	}
-}
-
-// Return the distance between two points
-func (c Crab) Distance(other kdtree.Point) float64 {
-	// d = √((x2-x1)2 + (y2-y1)2)
-	s0 := math.Pow(other.GetValue(0)-c.GetValue(0), 2)
-	s1 := math.Pow(other.GetValue(1)-c.GetValue(1), 2)
-	sum := s0 + s1
-	ret := math.Sqrt(sum)
-	return ret
-}
-
-// Return the distance between the point and the plane X_{dim}=val
-func (c Crab) PlaneDistance(val float64, dim int) float64 {
-	tmp := c.GetValue(dim) - val
-	return tmp * tmp
-}
-
 func SpawnCrabs(center Vec2, world *ecs.World) {
 	select {
 	case <-crabSpawnTicker.C:
-		for range 2 {
+		for range 20 {
 			id := world.NewId()
 			world.Write(id, ecs.C(NewCrab(id, randomPositionAround(center, 500, 1200))))
 		}
@@ -135,17 +102,17 @@ func MoveCrabs(world *ecs.World) {
 
 }
 
-func KillCrabs(world *ecs.World) {
+func KillCrabs(mut *sync.RWMutex, tree *kdtree.KDTree, world *ecs.World) {
 	bullets := ecs.Query1[Bullet](world)
-	crabs := ecs.Query1[Crab](world)
 
 	bullets.MapId(func(bid ecs.Id, b *Bullet) {
-		crabs.MapId(func(cid ecs.Id, c *Crab) {
-			if b.pos.Distance(c.pos) <= 20 {
-				// ecs.Delete(world, bid)
-				ecs.Delete(world, cid)
+		nn := tree.KNN(&points.Point2D{X: b.pos.X, Y: b.pos.Y}, 1)
+		for i := range nn {
+			c := nn[i].(*points.Point).Data.(*Crab)
+			if b.pos.Distance(c.pos) <= float64(c.image.Bounds().Dx()/2) {
+				ecs.Delete(world, c.id)
 			}
-		})
+		}
 	})
 }
 
