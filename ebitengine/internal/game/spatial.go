@@ -2,7 +2,7 @@ package game
 
 import (
 	"math"
-	"sync"
+	"math/rand"
 	"time"
 
 	"github.com/kyroy/kdtree"
@@ -52,7 +52,7 @@ func (v Vec2) Distance(other Vec2) float64 {
 
 var updateTicker = time.NewTicker(time.Millisecond * 20)
 
-func UpdateKDTree(mut *sync.RWMutex, tree *kdtree.KDTree, world *ecs.World) {
+func UpdateKDTree(tree *kdtree.KDTree, world *ecs.World) {
 	select {
 	case <-updateTicker.C:
 		q := ecs.Query1[Crab](world)
@@ -61,10 +61,19 @@ func UpdateKDTree(mut *sync.RWMutex, tree *kdtree.KDTree, world *ecs.World) {
 		q.MapId(func(id ecs.Id, a *Crab) {
 			kp = append(kp, points.NewPoint([]float64{a.pos.X, a.pos.Y}, a))
 		})
-		mut.Lock()
+
+		// mut.Lock()
 		*tree = *kdtree.New(kp)
-		mut.Unlock()
+		// mut.Unlock()
 	default:
 		return
 	}
+}
+
+func randomPositionAround(pos Vec2, min, max float32) Vec2 {
+	angle := 0 + rand.Float64()*(math.Pi*2-0)
+	dist := min + rand.Float32()*(max-min)
+	offsetX := math.Cos(angle) * float64(dist)
+	offsetY := math.Sin(angle) * float64(dist)
+	return Vec2{pos.X + (offsetX), pos.Y + (offsetY)}
 }

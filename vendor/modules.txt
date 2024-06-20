@@ -45,6 +45,7 @@ github.com/golang/freetype/truetype
 ## explicit; go 1.18
 github.com/hajimehoshi/ebiten/v2
 github.com/hajimehoshi/ebiten/v2/ebitenutil
+github.com/hajimehoshi/ebiten/v2/examples/resources/images
 github.com/hajimehoshi/ebiten/v2/inpututil
 github.com/hajimehoshi/ebiten/v2/internal/affine
 github.com/hajimehoshi/ebiten/v2/internal/atlas
@@ -97,8 +98,8 @@ github.com/kyroy/kdtree/points
 # github.com/kyroy/priority-queue v0.0.0-20180327160706-6e21825e7e0c
 ## explicit
 github.com/kyroy/priority-queue
-# github.com/stretchr/testify v1.6.1
-## explicit; go 1.13
+# github.com/stretchr/testify v1.9.0
+## explicit; go 1.17
 # github.com/unitoftime/cod v0.0.0-20230616173404-085cf4fe3918
 ## explicit; go 1.20
 github.com/unitoftime/cod/backend

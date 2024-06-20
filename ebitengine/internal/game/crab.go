@@ -4,9 +4,7 @@ import (
 	"bytes"
 	"image"
 	"log"
-	"math"
 	"math/rand"
-	"sync"
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -47,10 +45,9 @@ func init() {
 }
 
 type Crab struct {
-	id       ecs.Id
-	image    *ebiten.Image
-	pos      Vec2
-	velocity Vec2
+	id    ecs.Id
+	image *ebiten.Image
+	pos   Vec2
 }
 
 func NewCrab(id ecs.Id, pos Vec2) Crab {
@@ -66,17 +63,16 @@ func NewCrab(id ecs.Id, pos Vec2) Crab {
 	}()
 
 	return Crab{
-		id:       id,
-		image:    img,
-		pos:      pos,
-		velocity: Vec2{rand.Float64(), rand.Float64()},
+		id:    id,
+		image: img,
+		pos:   pos,
 	}
 }
 
 func SpawnCrabs(center Vec2, world *ecs.World) {
 	select {
 	case <-crabSpawnTicker.C:
-		for range 20 {
+		for range 2 {
 			id := world.NewId()
 			world.Write(id, ecs.C(NewCrab(id, randomPositionAround(center, 500, 1200))))
 		}
@@ -102,7 +98,7 @@ func MoveCrabs(world *ecs.World) {
 
 }
 
-func KillCrabs(mut *sync.RWMutex, tree *kdtree.KDTree, world *ecs.World) {
+func KillCrabs(tree *kdtree.KDTree, world *ecs.World) {
 	bullets := ecs.Query1[Bullet](world)
 
 	bullets.MapId(func(bid ecs.Id, b *Bullet) {
@@ -119,18 +115,11 @@ func KillCrabs(mut *sync.RWMutex, tree *kdtree.KDTree, world *ecs.World) {
 func DrawCrabs(screen *ebiten.Image, op *ebiten.DrawImageOptions, world *ecs.World) {
 	q := ecs.Query1[Crab](world)
 
-	q.MapId(func(id ecs.Id, g *Crab) {
+	q.MapId(func(id ecs.Id, c *Crab) {
 		op.GeoM.Reset()
 		op.GeoM.Scale(0.5, 0.5)
-		op.GeoM.Translate(float64(g.pos.X), float64(g.pos.Y))
-		screen.DrawImage(g.image, op)
+		op.GeoM.Translate(float64(c.pos.X), float64(c.pos.Y))
+		screen.DrawImage(c.image, op)
 	})
-}
 
-func randomPositionAround(pos Vec2, min, max float32) Vec2 {
-	angle := 0 + rand.Float64()*(math.Pi*2-0)
-	dist := min + rand.Float32()*(max-min)
-	offsetX := math.Cos(angle) * float64(dist)
-	offsetY := math.Sin(angle) * float64(dist)
-	return Vec2{pos.X + (offsetX), pos.Y + (offsetY)}
 }

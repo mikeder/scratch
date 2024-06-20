@@ -48,6 +48,22 @@ func ReadInputs(input *input) {
 		input.fire = false
 	}
 
+	// ENTER
+	if keyPress(ebiten.KeyEnter) {
+		input.enter = true
+	}
+	if keyRelease(ebiten.KeyEnter) {
+		input.enter = false
+	}
+
+	// EXIT
+	if keyPress(ebiten.KeyEscape) || keyPress(ebiten.KeyDelete) {
+		input.exit = true
+	}
+	if keyRelease(ebiten.KeyEscape) || keyRelease(ebiten.KeyDelete) {
+		input.exit = false
+	}
+
 	cx, cy := ebiten.CursorPosition()
 	input.cursor = Vec2{float64(cx), float64(cy)}
 }
