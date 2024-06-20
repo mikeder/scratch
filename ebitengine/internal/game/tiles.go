@@ -15,12 +15,15 @@ type TileMatrix struct {
 }
 
 const (
-	tileSize = 16
+	tileSize  = 16
+	tileScale = 2
 )
 
 var (
 	tilesImage *ebiten.Image
 	tileMatrix *TileMatrix
+
+	worldImage *ebiten.Image
 )
 
 func init() {
@@ -31,41 +34,83 @@ func init() {
 	}
 	tilesImage = ebiten.NewImageFromImage(img)
 
-	cols := ScreenWidth / tileSize
-	rows := ScreenHeight / tileSize
+	cols := (ScreenWidth / tileSize)
+	rows := (ScreenHeight / tileSize)
 
-	grass := []int{218, 219, 243, 244}
+	grassTiles := []int{218, 219, 243, 244}
+	flowerTiles := []int{301, 302, 303, 304}
 
-	layer1 := func() []int {
+	grass := func() []int {
 		var layer []int
 		for range cols {
 			for range rows {
-				layer = append(layer, grass[rand.Intn(len(grass))])
+				layer = append(layer, grassTiles[rand.Intn(len(grassTiles))])
 			}
 		}
 		return layer
 	}()
 
-	tileMatrix = &TileMatrix{layers: [][]int{layer1}}
+	flowers := func() []int {
+		var layer []int
+		for range cols {
+			for range rows {
+				rnd := rand.Float64()
+				if rnd > 0.95 {
+					layer = append(layer, flowerTiles[rand.Intn(len(flowerTiles))])
+				} else {
+					layer = append(layer, 0)
+				}
+			}
+		}
+		return layer
+	}()
+
+	tileMatrix = &TileMatrix{layers: [][]int{grass, flowers}}
+	drawWorldImage()
 }
 
 func DrawWorld(screen *ebiten.Image, op *ebiten.DrawImageOptions) {
+	// const xCount = ScreenWidth / tileSize
+
+	// w := tilesImage.Bounds().Dx()
+	// tileXCount := w / tileSize
+
+	// for _, layer := range tileMatrix.layers {
+	// 	for i, tile := range layer {
+	// 		op.GeoM.Reset()
+
+	// 		op.GeoM.Translate(float64((i%xCount)*tileSize), float64((i/xCount)*tileSize))
+	// 		op.GeoM.Scale(tileScale, tileScale)
+
+	// 		sx := (tile % tileXCount) * tileSize
+	// 		sy := (tile / tileXCount) * tileSize
+	// 		screen.DrawImage(tilesImage.SubImage(image.Rect(sx, sy, sx+tileSize, sy+tileSize)).(*ebiten.Image), op)
+	// 	}
+	// }
+
+	op.GeoM.Reset()
+	screen.DrawImage(worldImage, op)
+}
+
+func drawWorldImage() {
 	const xCount = ScreenWidth / tileSize
 
 	w := tilesImage.Bounds().Dx()
 	tileXCount := w / tileSize
 
+	op := new(ebiten.DrawImageOptions)
+	img := ebiten.NewImage(ScreenWidth, ScreenHeight)
 	for _, layer := range tileMatrix.layers {
 		for i, tile := range layer {
 			op.GeoM.Reset()
 
 			op.GeoM.Translate(float64((i%xCount)*tileSize), float64((i/xCount)*tileSize))
-			op.GeoM.Scale(3, 3)
+			op.GeoM.Scale(tileScale, tileScale)
 
 			sx := (tile % tileXCount) * tileSize
 			sy := (tile / tileXCount) * tileSize
-			screen.DrawImage(tilesImage.SubImage(image.Rect(sx, sy, sx+tileSize, sy+tileSize)).(*ebiten.Image), op)
+			img.DrawImage(tilesImage.SubImage(image.Rect(sx, sy, sx+tileSize, sy+tileSize)).(*ebiten.Image), op)
 		}
 	}
-
+	worldImage = img
 }
