@@ -41,7 +41,7 @@ func init() {
 	crabImage2 = ebiten.NewImageFromImage(c2png)
 	crabImage3 = ebiten.NewImageFromImage(c3png)
 
-	crabSpawnTicker = time.NewTicker(time.Millisecond * 20)
+	crabSpawnTicker = time.NewTicker(time.Millisecond * 50)
 }
 
 type Crab struct {
