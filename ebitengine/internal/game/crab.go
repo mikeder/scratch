@@ -3,6 +3,7 @@ package game
 import (
 	"bytes"
 	"image"
+	"image/color"
 	"log"
 	"math/rand"
 	"time"
@@ -13,15 +14,12 @@ import (
 	"github.com/unitoftime/ecs"
 )
 
-const (
-	crabSpeed float64 = 1.5
-)
+type Dead struct{}
 
 var (
-	crabImage1      *ebiten.Image
-	crabImage2      *ebiten.Image
-	crabImage3      *ebiten.Image
-	crabSpawnTicker *time.Ticker
+	crabImage1 *ebiten.Image
+	crabImage2 *ebiten.Image
+	crabImage3 *ebiten.Image
 )
 
 func init() {
@@ -40,14 +38,15 @@ func init() {
 	crabImage1 = ebiten.NewImageFromImage(c1png)
 	crabImage2 = ebiten.NewImageFromImage(c2png)
 	crabImage3 = ebiten.NewImageFromImage(c3png)
-
-	crabSpawnTicker = time.NewTicker(time.Millisecond * 50)
 }
 
 type Crab struct {
-	id    ecs.Id
-	image *ebiten.Image
-	pos   Vec2
+	id        ecs.Id
+	image     *ebiten.Image
+	pos       Vec2
+	spawnedAt time.Time
+	killedAt  time.Time
+	speed     float64
 }
 
 func NewCrab(id ecs.Id, pos Vec2) Crab {
@@ -60,18 +59,37 @@ func NewCrab(id ecs.Id, pos Vec2) Crab {
 		default:
 			return crabImage3
 		}
-	}()
+	}
+
+	speed := func() float64 {
+		switch rand.Intn(5) {
+		case 0:
+			return .7
+		case 1:
+			return .9
+		case 2:
+			return 1.10
+		case 3:
+			return 1.15
+		case 4:
+			return 1.2
+		default:
+			return 2.0
+		}
+	}
 
 	return Crab{
-		id:    id,
-		image: img,
-		pos:   pos,
+		id:        id,
+		image:     img(),
+		pos:       pos,
+		spawnedAt: time.Now(),
+		speed:     speed(),
 	}
 }
 
-func SpawnCrabs(center Vec2, world *ecs.World) {
+func SpawnCrabs(center Vec2, ticker *time.Ticker, world *ecs.World) {
 	select {
-	case <-crabSpawnTicker.C:
+	case <-ticker.C:
 		for range 2 {
 			id := world.NewId()
 			world.Write(id, ecs.C(NewCrab(id, randomPositionAround(center, 500, 1200))))
@@ -83,17 +101,17 @@ func SpawnCrabs(center Vec2, world *ecs.World) {
 
 func MoveCrabs(world *ecs.World) {
 	player := ecs.Query1[Gopher](world)
-	crabs := ecs.Query1[Crab](world)
+	crabs := ecs.Query1[Crab](world, ecs.Without(Dead{}))
 
 	var pp Vec2
-	player.MapId(func(_ ecs.Id, a *Gopher) {
-		pp = a.pos
+	player.MapId(func(_ ecs.Id, g *Gopher) {
+		pp = g.pos
 	})
 
-	crabs.MapId(func(id ecs.Id, a *Crab) {
-		dir := pp.Sub(a.pos).Clamp(Vec2{-180, -180}, Vec2{180, 180})
-		a.pos.X += dir.X * crabSpeed * 0.005
-		a.pos.Y += dir.Y * crabSpeed * 0.005
+	crabs.MapId(func(id ecs.Id, c *Crab) {
+		dir := pp.Sub(c.pos).Clamp(Vec2{-180, -180}, Vec2{180, 180})
+		c.pos.X += dir.X * c.speed * 0.005
+		c.pos.Y += dir.Y * c.speed * 0.005
 	})
 
 }
@@ -105,9 +123,24 @@ func KillCrabs(tree *kdtree.KDTree, world *ecs.World) {
 		nn := tree.KNN(&points.Point2D{X: b.pos.X, Y: b.pos.Y}, 1)
 		for i := range nn {
 			c := nn[i].(*points.Point).Data.(*Crab)
-			if b.pos.Distance(c.pos) <= float64(c.image.Bounds().Dx()/2) {
-				ecs.Delete(world, c.id)
+			if b.pos.Distance(c.pos) < float64(c.image.Bounds().Dx()/4) {
+				if !c.killedAt.IsZero() {
+					return
+				}
+				c.killedAt = time.Now()
+				tree.Remove(nn[i])
+				world.Write(c.id, ecs.C(Dead{}))
 			}
+		}
+	})
+}
+
+func DeleteCrabs(world *ecs.World) {
+	crabs := ecs.Query1[Crab](world, ecs.With(Dead{}))
+
+	crabs.MapId(func(bid ecs.Id, c *Crab) {
+		if time.Since(c.killedAt) > 1*time.Second {
+			ecs.Delete(world, c.id)
 		}
 	})
 }
@@ -116,9 +149,32 @@ func DrawCrabs(screen *ebiten.Image, op *ebiten.DrawImageOptions, world *ecs.Wor
 	q := ecs.Query1[Crab](world)
 
 	q.MapId(func(id ecs.Id, c *Crab) {
+		alpha := func() float32 {
+			v := float32(1)
+			t := time.Since(c.spawnedAt).Seconds()
+			if t > 1 && c.killedAt.IsZero() {
+				return v
+			}
+			if !c.killedAt.IsZero() {
+				return float32(1 - time.Since(c.killedAt).Seconds())
+			}
+
+			return float32(0.1 + t)
+		}()
+
 		op.GeoM.Reset()
-		op.GeoM.Scale(0.5, 0.5)
+		op.ColorScale.Reset()
+
+		if !c.killedAt.IsZero() {
+			op.GeoM.Scale(0.5, -0.5)
+			op.GeoM.Translate(0, float64(c.image.Bounds().Dy()/2))
+			op.ColorScale.ScaleWithColor(color.Black)
+		} else {
+			op.GeoM.Scale(0.5, 0.5)
+		}
 		op.GeoM.Translate(float64(c.pos.X), float64(c.pos.Y))
+		op.ColorScale.SetA(alpha)
+
 		screen.DrawImage(c.image, op)
 	})
 

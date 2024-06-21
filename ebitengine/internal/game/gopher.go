@@ -82,6 +82,7 @@ func DrawGopher(screen *ebiten.Image, op *ebiten.DrawImageOptions, world *ecs.Wo
 	q := ecs.Query1[Gopher](world)
 
 	q.MapId(func(id ecs.Id, g *Gopher) {
+		op.ColorScale.Reset()
 		op.GeoM.Reset()
 		op.GeoM.Scale(0.5, 0.5)
 		op.GeoM.Translate(float64(g.pos.X), float64(g.pos.Y))
@@ -117,22 +118,31 @@ func NewBullet(id ecs.Id, pos Vec2, dir Vec2) Bullet {
 	}
 }
 
-func SpawnBullets(center Vec2, input *input, world *ecs.World) {
+func SpawnBullets(center Vec2, ticker *time.Ticker, input *input, world *ecs.World) {
 
-	if input.fire {
-		q := ecs.Query1[Gopher](world)
+	select {
+	case <-ticker.C:
+		if input.fire {
+			q := ecs.Query1[Gopher](world)
 
-		var pos Vec2
-		q.MapId(func(id ecs.Id, a *Gopher) {
-			pos = a.pos.Add(Vec2{20, 0})
-		})
+			var pos Vec2
+			q.MapId(func(id ecs.Id, a *Gopher) {
+				pos = a.pos.Add(Vec2{20, 0})
+			})
 
-		dir := pos.Sub(input.cursor).Clamp(Vec2{-360, -360}, Vec2{360, 360})
-		for i := range 1 {
-			f := float64(i) * 10
+			dir := pos.Sub(input.cursor).Clamp(Vec2{-360, -360}, Vec2{360, 360})
+
 			bid := world.NewId()
-			world.Write(bid, ecs.C(NewBullet(bid, pos, dir.Add(Vec2{f, f}))))
+			world.Write(bid, ecs.C(NewBullet(bid, pos, dir)))
+
+			bid = world.NewId()
+			world.Write(bid, ecs.C(NewBullet(bid, pos, dir.Add(Vec2{18, 18}))))
+
+			bid = world.NewId()
+			world.Write(bid, ecs.C(NewBullet(bid, pos, dir.Sub(Vec2{18, 18}))))
 		}
+	default:
+		return
 	}
 }
 
@@ -158,6 +168,7 @@ func DrawBullets(screen *ebiten.Image, op *ebiten.DrawImageOptions, world *ecs.W
 	q := ecs.Query1[Bullet](world)
 
 	q.MapId(func(id ecs.Id, g *Bullet) {
+		op.ColorScale.Reset()
 		op.GeoM.Reset()
 		op.GeoM.Scale(1.5, 1.5)
 		op.GeoM.Translate(float64(g.pos.X), float64(g.pos.Y))

@@ -50,11 +50,9 @@ func (v Vec2) Distance(other Vec2) float64 {
 	return d
 }
 
-var updateTicker = time.NewTicker(time.Millisecond * 20)
-
-func UpdateKDTree(tree *kdtree.KDTree, world *ecs.World) {
+func UpdateKDTree(tree *kdtree.KDTree, ticker *time.Ticker, world *ecs.World) {
 	select {
-	case <-updateTicker.C:
+	case <-ticker.C:
 		q := ecs.Query1[Crab](world)
 
 		var kp []kdtree.Point

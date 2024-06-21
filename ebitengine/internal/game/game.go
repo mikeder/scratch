@@ -47,7 +47,13 @@ type Game struct {
 	// state
 	gameState   uint
 	playerAdded bool
+	round       int
 	tree        *kdtree.KDTree
+
+	// tickers
+	bulletTicker *time.Ticker
+	crabTicker   *time.Ticker
+	treeTicker   *time.Ticker
 }
 
 var _ ebiten.Game = (*Game)(nil)
@@ -60,6 +66,12 @@ func NewGame() *Game {
 		tree:      kdtree.New(nil),
 		window:    window{ScreenWidth, ScreenHeight},
 		world:     ecs.NewWorld(),
+
+		round: 1,
+
+		bulletTicker: time.NewTicker(time.Millisecond * 50),
+		crabTicker:   time.NewTicker(time.Millisecond * 50),
+		treeTicker:   time.NewTicker(time.Millisecond * 40),
 	}
 	return g
 }
@@ -86,14 +98,15 @@ func (g *Game) Update() error {
 			g.gameState = GameStatePlaying
 		}
 	case GameStatePlaying:
-		SpawnCrabs(g.center, g.world)
+		SpawnCrabs(g.center, g.crabTicker, g.world)
 		MoveGopher(g.input, g.world)
-		SpawnBullets(g.center, g.input, g.world)
+		SpawnBullets(g.center, g.bulletTicker, g.input, g.world)
 		MoveBullets(g.world)
 		ExpireBullets(g.world)
 		MoveCrabs(g.world)
 		KillCrabs(g.tree, g.world)
-		UpdateKDTree(g.tree, g.world)
+		DeleteCrabs(g.world)
+		UpdateKDTree(g.tree, g.treeTicker, g.world)
 		if g.input.exit {
 			g.gameState = GameStateMenu
 		}
@@ -121,8 +134,8 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		DrawWorld(screen, g.op)
 
 		PrintDebugText(screen, g.input, g.world)
-		DrawCrabs(screen, g.op, g.world)
 		DrawGopher(screen, g.op, g.world)
+		DrawCrabs(screen, g.op, g.world)
 		DrawBullets(screen, g.op, g.world)
 
 	default:
