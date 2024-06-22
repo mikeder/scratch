@@ -142,18 +142,6 @@ func KillCrabs(counter *uint, tree *kdtree.KDTree, world *ecs.World) {
 	})
 }
 
-func UpdateWave(counter uint, next, wave *uint, currentD *time.Duration, ticker *time.Ticker) {
-	current := next
-	if counter >= *current {
-		*next = *current * 2
-		*wave += 1
-
-		newD := time.Duration(currentD.Nanoseconds() / 2)
-		*currentD = newD
-		ticker.Reset(newD)
-	}
-}
-
 func DeleteCrabs(world *ecs.World) {
 	crabs := ecs.Query1[Crab](world, ecs.With(Dead{}))
 
