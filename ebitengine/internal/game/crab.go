@@ -87,12 +87,18 @@ func NewCrab(id ecs.Id, pos Vec2) Crab {
 	}
 }
 
-func SpawnCrabs(center Vec2, ticker *time.Ticker, world *ecs.World) {
+func SpawnCrabs(ticker *time.Ticker, world *ecs.World) {
 	select {
 	case <-ticker.C:
+		q := ecs.Query1[Gopher](world)
+		var pos Vec2
+		q.MapId(func(id ecs.Id, a *Gopher) {
+			pos = a.pos
+		})
+
 		for range 2 {
 			id := world.NewId()
-			world.Write(id, ecs.C(NewCrab(id, randomPositionAround(center, 500, 1200))))
+			world.Write(id, ecs.C(NewCrab(id, randomPositionAround(pos, 500, 1200))))
 		}
 	default:
 		return
@@ -116,7 +122,7 @@ func MoveCrabs(world *ecs.World) {
 
 }
 
-func KillCrabs(tree *kdtree.KDTree, world *ecs.World) {
+func KillCrabs(counter *uint, tree *kdtree.KDTree, world *ecs.World) {
 	bullets := ecs.Query1[Bullet](world)
 
 	bullets.MapId(func(bid ecs.Id, b *Bullet) {
@@ -127,12 +133,25 @@ func KillCrabs(tree *kdtree.KDTree, world *ecs.World) {
 				if !c.killedAt.IsZero() {
 					return
 				}
+				*counter += 1
 				c.killedAt = time.Now()
 				tree.Remove(nn[i])
 				world.Write(c.id, ecs.C(Dead{}))
 			}
 		}
 	})
+}
+
+func UpdateWave(counter uint, next, wave *uint, currentD *time.Duration, ticker *time.Ticker) {
+	current := next
+	if counter >= *current {
+		*next = *current * 2
+		*wave += 1
+
+		newD := time.Duration(currentD.Nanoseconds() / 2)
+		*currentD = newD
+		ticker.Reset(newD)
+	}
 }
 
 func DeleteCrabs(world *ecs.World) {

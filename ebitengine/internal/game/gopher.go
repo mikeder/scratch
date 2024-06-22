@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/kyroy/kdtree"
+	"github.com/kyroy/kdtree/points"
 	"github.com/unitoftime/ecs"
 )
 
@@ -173,5 +175,24 @@ func DrawBullets(screen *ebiten.Image, op *ebiten.DrawImageOptions, world *ecs.W
 		op.GeoM.Scale(1.5, 1.5)
 		op.GeoM.Translate(float64(g.pos.X), float64(g.pos.Y))
 		screen.DrawImage(g.image, op)
+	})
+}
+
+func KillGopher(gs *GameState, tree *kdtree.KDTree, world *ecs.World) {
+	q := ecs.Query1[Gopher](world)
+
+	q.MapId(func(id ecs.Id, g *Gopher) {
+		nn := tree.KNN(&points.Point2D{X: g.pos.X, Y: g.pos.Y}, 1)
+		for i := range nn {
+			c := nn[i].(*points.Point).Data.(*Crab)
+			dis := g.pos.Distance(c.pos)
+
+			if dis < float64(c.image.Bounds().Dx()/4) || dis < float64(c.image.Bounds().Dy()/4) {
+				if c.killedAt.IsZero() {
+					*gs = GameStateOver
+				}
+			}
+
+		}
 	})
 }
