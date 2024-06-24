@@ -154,6 +154,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		PlayMenu(g.crabsKilled, g.waveNum, screen)
 	case GameStateOver:
 		DrawWorld(screen, g.op)
+		DrawGopher(screen, g.op, g.world)
+		DrawCrabs(screen, g.op, g.world)
+		DrawBullets(screen, g.op, g.world)
 		OverMenu(g.crabsKilled, g.waveNum, screen)
 	default:
 		// do stuff

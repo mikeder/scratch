@@ -64,6 +64,8 @@ func ReadInputs(input *input) {
 		input.exit = false
 	}
 
+	// if inpututil.AppendJustPressedTouchIDs()
+
 	cx, cy := ebiten.CursorPosition()
 	input.cursor = Vec2{float64(cx), float64(cy)}
 }

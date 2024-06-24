@@ -5,17 +5,16 @@ import (
 )
 
 var (
-	//go:embed crab1.png
+	//go:embed assets/crab1.png
 	Crab1_png []byte
-	//go:embed crab2.png
+	//go:embed assets/crab2.png
 	Crab2_png []byte
-	//go:embed crab3.png
+	//go:embed assets/crab3.png
 	Crab3_png []byte
-
-	//go:embed gopher.png
+	//go:embed assets/gopher.png
 	Gopher_png []byte
-	//go:embed gobullet1.png
+	//go:embed assets/gobullet1.png
 	GoBullet1_png []byte
-	//go:embed gobullet2.png
+	//go:embed assets/gobullet2.png
 	GoBullet2_png []byte
 )
