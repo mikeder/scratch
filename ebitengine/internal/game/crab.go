@@ -74,7 +74,7 @@ func NewCrab(id ecs.Id, pos Vec2) Crab {
 		case 4:
 			return 1.2
 		default:
-			return 2.0
+			return 5.0
 		}
 	}
 
@@ -123,12 +123,15 @@ func MoveCrabs(world *ecs.World) {
 }
 
 func KillCrabs(counter *uint, tree *kdtree.KDTree, world *ecs.World) {
-	bullets := ecs.Query1[Bullet](world)
+	bullets := ecs.Query1[Projectile](world)
 
-	bullets.MapId(func(bid ecs.Id, b *Bullet) {
+	bullets.MapId(func(bid ecs.Id, b *Projectile) {
 		nn := tree.KNN(&points.Point2D{X: b.pos.X, Y: b.pos.Y}, 1)
 		for i := range nn {
 			c := nn[i].(*points.Point).Data.(*Crab)
+			if b.team == teamCrab {
+				return
+			}
 			if b.pos.Distance(c.pos) < float64(c.image.Bounds().Dx()/4) {
 				if !c.killedAt.IsZero() {
 					return
@@ -185,4 +188,29 @@ func DrawCrabs(screen *ebiten.Image, op *ebiten.DrawImageOptions, world *ecs.Wor
 		screen.DrawImage(c.image, op)
 	})
 
+}
+
+func CrabShoots(ticker *time.Ticker, world *ecs.World) {
+	select {
+	case <-ticker.C:
+		q1 := ecs.Query1[Crab](world)
+		var crabs []*Crab
+		q1.MapId(func(id ecs.Id, c *Crab) {
+			crabs = append(crabs, c)
+		})
+
+		q2 := ecs.Query1[Gopher](world)
+		var target Vec2
+		q2.MapId(func(id ecs.Id, a *Gopher) {
+			target = a.pos
+		})
+
+		randomCrab := crabs[rand.Intn(len(crabs))]
+		dir := randomCrab.pos.Sub(target).Clamp(Vec2{-360, -360}, Vec2{360, 360})
+
+		bid := world.NewId()
+		world.Write(bid, ecs.C(NewCrabBullet(randomCrab.id, bid, randomCrab.pos, dir)))
+	default:
+		return
+	}
 }

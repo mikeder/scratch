@@ -11,10 +11,10 @@ import (
 func PrintDebugText(screen *ebiten.Image, input *input, world *ecs.World) {
 	q1 := ecs.Query1[Crab](world)
 	q2 := ecs.Query1[Gopher](world)
-	q3 := ecs.Query1[Bullet](world)
+	q3 := ecs.Query1[Projectile](world)
 
 	var bullets int
-	q3.MapId(func(_ ecs.Id, _ *Bullet) {
+	q3.MapId(func(_ ecs.Id, _ *Projectile) {
 		bullets++
 	})
 

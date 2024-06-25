@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"image"
 	"log"
-	"math/rand"
-	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/kyroy/kdtree"
@@ -14,15 +12,11 @@ import (
 )
 
 const (
-	bulletSpeed    float64       = 16.0
-	bulletLifetime time.Duration = 3 * time.Second
-	gopherSpeed    float64       = 8.0
+	gopherSpeed float64 = 8.0
 )
 
 var (
-	bulletImage1 *ebiten.Image
-	bulletImage2 *ebiten.Image
-	gopherImage  *ebiten.Image
+	gopherImage *ebiten.Image
 )
 
 func init() {
@@ -31,18 +25,6 @@ func init() {
 		log.Fatal(err)
 	}
 	gopherImage = ebiten.NewImageFromImage(gopherPng)
-
-	bulletPng1, _, err := image.Decode(bytes.NewReader(GoBullet1_png))
-	if err != nil {
-		log.Fatal(err)
-	}
-	bulletImage1 = ebiten.NewImageFromImage(bulletPng1)
-
-	bulletPng2, _, err := image.Decode(bytes.NewReader(GoBullet2_png))
-	if err != nil {
-		log.Fatal(err)
-	}
-	bulletImage2 = ebiten.NewImageFromImage(bulletPng2)
 }
 
 type Gopher struct {
@@ -87,92 +69,6 @@ func DrawGopher(screen *ebiten.Image, op *ebiten.DrawImageOptions, world *ecs.Wo
 		op.ColorScale.Reset()
 		op.GeoM.Reset()
 		op.GeoM.Scale(0.5, 0.5)
-		op.GeoM.Translate(float64(g.pos.X), float64(g.pos.Y))
-		screen.DrawImage(g.image, op)
-	})
-}
-
-type Bullet struct {
-	id    ecs.Id
-	image *ebiten.Image
-
-	expires time.Time
-	dir     Vec2
-	pos     Vec2
-}
-
-func NewBullet(id ecs.Id, pos Vec2, dir Vec2) Bullet {
-	img := func() *ebiten.Image {
-		switch rand.Intn(2) {
-		case 0:
-			return bulletImage1
-		default:
-			return bulletImage2
-		}
-	}()
-
-	return Bullet{
-		id:      id,
-		image:   img,
-		pos:     pos,
-		dir:     dir,
-		expires: time.Now().Add(bulletLifetime),
-	}
-}
-
-func SpawnBullets(center Vec2, ticker *time.Ticker, input *input, world *ecs.World) {
-
-	select {
-	case <-ticker.C:
-		if input.fire {
-			q := ecs.Query1[Gopher](world)
-
-			var pos Vec2
-			q.MapId(func(id ecs.Id, a *Gopher) {
-				pos = a.pos.Add(Vec2{20, 0})
-			})
-
-			dir := pos.Sub(input.cursor).Clamp(Vec2{-360, -360}, Vec2{360, 360})
-
-			bid := world.NewId()
-			world.Write(bid, ecs.C(NewBullet(bid, pos, dir)))
-
-			bid = world.NewId()
-			world.Write(bid, ecs.C(NewBullet(bid, pos, dir.Add(Vec2{18, 18}))))
-
-			bid = world.NewId()
-			world.Write(bid, ecs.C(NewBullet(bid, pos, dir.Sub(Vec2{18, 18}))))
-		}
-	default:
-		return
-	}
-}
-
-func MoveBullets(world *ecs.World) {
-	q := ecs.Query1[Bullet](world)
-	q.MapId(func(id ecs.Id, a *Bullet) {
-		a.pos.X -= a.dir.X * bulletSpeed * 0.005
-		a.pos.Y -= a.dir.Y * bulletSpeed * 0.005
-	})
-}
-
-func ExpireBullets(world *ecs.World) {
-	q := ecs.Query1[Bullet](world)
-
-	q.MapId(func(id ecs.Id, a *Bullet) {
-		if a.expires.Before(time.Now()) {
-			ecs.Delete(world, id)
-		}
-	})
-}
-
-func DrawBullets(screen *ebiten.Image, op *ebiten.DrawImageOptions, world *ecs.World) {
-	q := ecs.Query1[Bullet](world)
-
-	q.MapId(func(id ecs.Id, g *Bullet) {
-		op.ColorScale.Reset()
-		op.GeoM.Reset()
-		op.GeoM.Scale(1.5, 1.5)
 		op.GeoM.Translate(float64(g.pos.X), float64(g.pos.Y))
 		screen.DrawImage(g.image, op)
 	})
