@@ -21,7 +21,9 @@ const (
 	bulletTickStart     = 200 * time.Millisecond
 	bulletTickEnd       = 20 * time.Millisecond
 	crabTickStart       = 500 * time.Millisecond
+	crabTickEnd         = 50 * time.Millisecond
 	crabBulletTickStart = 5 * time.Second
+	crabBulletTickEnd   = 50 * time.Millisecond
 )
 
 type input struct {
@@ -52,6 +54,7 @@ type Game struct {
 	// state
 	gameState   GameState
 	playerAdded bool
+	// playerHealth Health
 	crabsKilled uint
 	nextWave    uint
 	waveNum     uint
@@ -122,9 +125,11 @@ func (g *Game) Update() error {
 		MoveBullets(g.world)
 		ExpireBullets(g.world)
 		MoveCrabs(g.world)
-		KillCrabs(&g.crabsKilled, g.tree, g.world)
+		BulletHitsCrab(g.tree, g.world)
+		BulletHitsGopher(g.world)
+		KillCrabs(&g.crabsKilled, g.world)
 		DeleteCrabs(g.world)
-		CrabShoots(g.crabBulletTicker, g.world)
+		CrabShoots(g.tree, g.crabBulletTicker, g.world)
 		KillGopher(&g.gameState, g.tree, g.world)
 		UpdateKDTree(g.tree, g.treeTicker, g.world)
 		g.UpdateWave()
@@ -157,7 +162,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		DrawGopher(screen, g.op, g.world)
 		DrawCrabs(screen, g.op, g.world)
 		DrawBullets(screen, g.op, g.world)
-		PlayMenu(g.crabsKilled, g.waveNum, screen)
+		PlayMenu(g.crabsKilled, g.waveNum, g.world, screen)
 	case GameStateOver:
 		DrawWorld(screen, g.op)
 		DrawGopher(screen, g.op, g.world)
@@ -214,10 +219,17 @@ func (g *Game) UpdateWave() {
 
 		// crab ticker
 		cd := time.Duration(g.currentCrabTickD.Nanoseconds() / 2)
+		if cd < crabTickEnd {
+			cd = crabTickStart
+		}
 		g.currentCrabTickD = cd
 		g.crabTicker.Reset(cd)
 
+		// crab bullet ticker
 		cbd := time.Duration(g.currentCrabBulletTickD.Nanoseconds() / 2)
+		if cbd < crabBulletTickEnd {
+			cbd = crabBulletTickStart
+		}
 		g.currentCrabBulletTickD = cbd
 		g.crabBulletTicker.Reset(cbd)
 	}

@@ -42,6 +42,7 @@ func init() {
 
 type Crab struct {
 	id        ecs.Id
+	health    Health
 	image     *ebiten.Image
 	pos       Vec2
 	spawnedAt time.Time
@@ -83,8 +84,14 @@ func NewCrab(id ecs.Id, pos Vec2) Crab {
 		image:     img(),
 		pos:       pos,
 		spawnedAt: time.Now(),
+		killedAt:  time.Time{},
 		speed:     speed(),
+		health:    crabDefaultHealth,
 	}
+}
+
+func (c *Crab) IsDead() bool {
+	return c.health <= 0
 }
 
 func SpawnCrabs(ticker *time.Ticker, world *ecs.World) {
@@ -119,28 +126,33 @@ func MoveCrabs(world *ecs.World) {
 		c.pos.X += dir.X * c.speed * 0.005
 		c.pos.Y += dir.Y * c.speed * 0.005
 	})
-
 }
 
-func KillCrabs(counter *uint, tree *kdtree.KDTree, world *ecs.World) {
+func BulletHitsCrab(tree *kdtree.KDTree, world *ecs.World) {
 	bullets := ecs.Query1[Projectile](world)
 
 	bullets.MapId(func(bid ecs.Id, b *Projectile) {
 		nn := tree.KNN(&points.Point2D{X: b.pos.X, Y: b.pos.Y}, 1)
 		for i := range nn {
 			c := nn[i].(*points.Point).Data.(*Crab)
-			if b.team == teamCrab {
-				return
+			if b.team == teamCrab || c.IsDead() {
+				continue
 			}
 			if b.pos.Distance(c.pos) < float64(c.image.Bounds().Dx()/4) {
-				if !c.killedAt.IsZero() {
-					return
-				}
-				*counter += 1
-				c.killedAt = time.Now()
-				tree.Remove(nn[i])
-				world.Write(c.id, ecs.C(Dead{}))
+				c.health.Remove(5)
 			}
+		}
+	})
+}
+
+func KillCrabs(counter *uint, world *ecs.World) {
+	crabs := ecs.Query1[Crab](world)
+
+	crabs.MapId(func(bid ecs.Id, c *Crab) {
+		if c.health <= 0 && c.killedAt.IsZero() {
+			*counter += 1
+			c.killedAt = time.Now()
+			world.Write(c.id, ecs.C(Dead{}))
 		}
 	})
 }
@@ -149,7 +161,7 @@ func DeleteCrabs(world *ecs.World) {
 	crabs := ecs.Query1[Crab](world, ecs.With(Dead{}))
 
 	crabs.MapId(func(bid ecs.Id, c *Crab) {
-		if time.Since(c.killedAt) > 1*time.Second {
+		if time.Since(c.killedAt) > 750*time.Millisecond {
 			ecs.Delete(world, c.id)
 		}
 	})
@@ -165,7 +177,7 @@ func DrawCrabs(screen *ebiten.Image, op *ebiten.DrawImageOptions, world *ecs.Wor
 			if t > 1 && c.killedAt.IsZero() {
 				return v
 			}
-			if !c.killedAt.IsZero() {
+			if c.IsDead() {
 				return float32(1 - time.Since(c.killedAt).Seconds())
 			}
 
@@ -190,26 +202,25 @@ func DrawCrabs(screen *ebiten.Image, op *ebiten.DrawImageOptions, world *ecs.Wor
 
 }
 
-func CrabShoots(ticker *time.Ticker, world *ecs.World) {
+func CrabShoots(tree *kdtree.KDTree, ticker *time.Ticker, world *ecs.World) {
 	select {
 	case <-ticker.C:
-		q1 := ecs.Query1[Crab](world)
-		var crabs []*Crab
-		q1.MapId(func(id ecs.Id, c *Crab) {
-			crabs = append(crabs, c)
-		})
-
 		q2 := ecs.Query1[Gopher](world)
 		var target Vec2
 		q2.MapId(func(id ecs.Id, a *Gopher) {
 			target = a.pos
 		})
 
-		randomCrab := crabs[rand.Intn(len(crabs))]
-		dir := randomCrab.pos.Sub(target).Clamp(Vec2{-360, -360}, Vec2{360, 360})
+		// get crab nearest to gopher
+		nn := tree.KNN(&points.Point2D{X: target.X, Y: target.Y}, 1)
+		for i := range nn {
+			attacker := nn[i].(*points.Point).Data.(*Crab)
 
-		bid := world.NewId()
-		world.Write(bid, ecs.C(NewCrabBullet(randomCrab.id, bid, randomCrab.pos, dir)))
+			dir := attacker.pos.Sub(target).Clamp(Vec2{-360, -360}, Vec2{360, 360})
+
+			bid := world.NewId()
+			world.Write(bid, ecs.C(NewCrabBullet(attacker.id, bid, attacker.pos, dir)), ecs.C(teamCrab))
+		}
 	default:
 		return
 	}

@@ -53,7 +53,7 @@ func (v Vec2) Distance(other Vec2) float64 {
 func UpdateKDTree(tree *kdtree.KDTree, ticker *time.Ticker, world *ecs.World) {
 	select {
 	case <-ticker.C:
-		q := ecs.Query1[Crab](world)
+		q := ecs.Query1[Crab](world, ecs.Without(Dead{}))
 
 		var kp []kdtree.Point
 		q.MapId(func(id ecs.Id, a *Crab) {

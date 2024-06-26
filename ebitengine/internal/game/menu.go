@@ -9,6 +9,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/examples/resources/fonts"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
+	"github.com/unitoftime/ecs"
 )
 
 const (
@@ -56,9 +57,16 @@ func StartMenu(screen *ebiten.Image) {
 	}, op)
 }
 
-func PlayMenu(counter, wave uint, screen *ebiten.Image) {
+func PlayMenu(counter, wave uint, world *ecs.World, screen *ebiten.Image) {
+	q := ecs.Query1[Gopher](world)
+
+	var health Health
+	q.MapId(func(id ecs.Id, a *Gopher) {
+		health = *a.health
+	})
+
 	title := fmt.Sprintf("WAVE: %d", wave)
-	body := fmt.Sprintf("\n\n\nCRABS DISPATCHED: %d\n\n\n", counter)
+	body := fmt.Sprintf("\n\n\nCRABS DISPATCHED: %d\n\n\nPLAYER HEALTH: %d\n\n\n", counter, health)
 
 	// title text
 	op := &text.DrawOptions{}

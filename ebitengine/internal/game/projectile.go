@@ -121,13 +121,13 @@ func SpawnBullets(center Vec2, ticker *time.Ticker, input *input, world *ecs.Wor
 			dir := pos.Sub(input.cursor).Clamp(Vec2{-360, -360}, Vec2{360, 360})
 
 			pid := world.NewId()
-			world.Write(pid, ecs.C(NewGoBullet(oid, pid, bulletSpeed, dir, pos)))
+			world.Write(pid, ecs.C(NewGoBullet(oid, pid, bulletSpeed, dir, pos)), ecs.C(teamGopher))
 
 			pid = world.NewId()
-			world.Write(pid, ecs.C(NewGoBullet(oid, pid, bulletSpeed, dir.Add(Vec2{18, 18}), pos)))
+			world.Write(pid, ecs.C(NewGoBullet(oid, pid, bulletSpeed, dir.Add(Vec2{18, 18}), pos)), ecs.C(teamGopher))
 
 			pid = world.NewId()
-			world.Write(pid, ecs.C(NewGoBullet(oid, pid, bulletSpeed, dir.Sub(Vec2{18, 18}), pos)))
+			world.Write(pid, ecs.C(NewGoBullet(oid, pid, bulletSpeed, dir.Sub(Vec2{18, 18}), pos)), ecs.C(teamGopher))
 		}
 	default:
 		return
