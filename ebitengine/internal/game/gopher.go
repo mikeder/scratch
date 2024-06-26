@@ -90,7 +90,7 @@ func BulletHitsGopher(world *ecs.World) {
 		if b.team == teamGopher { // TODO: use marker component
 			return
 		}
-		if b.pos.Distance(player.pos) < float64(player.image.Bounds().Dx()/4) {
+		if b.pos.Distance(player.pos) < float64(player.image.Bounds().Dy()/4) {
 			player.health.Remove(25)
 			ecs.Delete(world, b.pid)
 		}

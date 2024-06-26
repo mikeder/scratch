@@ -137,7 +137,7 @@ func (g *Game) Update() error {
 			g.gameState = GameStateMenu
 		}
 	case GameStateOver:
-		if g.input.enter || g.input.fire {
+		if g.input.enter || g.input.exit {
 			g.gameState = GameStateMenu
 		}
 	default:

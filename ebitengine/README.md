@@ -13,4 +13,5 @@ Shoot: Space/Enter/Mouse1
 - [ ] More Better Crab Bullets
 - [ ] Sound FX
 - [ ] Music
-- [ ] 
+- [ ] Better ECS usage
+  - [ ] Single system for ecs.Delete

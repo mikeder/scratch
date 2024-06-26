@@ -65,12 +65,12 @@ func PlayMenu(counter, wave uint, world *ecs.World, screen *ebiten.Image) {
 		health = *a.health
 	})
 
-	title := fmt.Sprintf("WAVE: %d", wave)
-	body := fmt.Sprintf("\n\n\nCRABS DISPATCHED: %d\n\n\nPLAYER HEALTH: %d\n\n\n", counter, health)
+	title := fmt.Sprintf("WAVE: %d\n\n", wave)
+	body := fmt.Sprintf("\n\nSCORE: %d\nHEALTH: %d", counter, health)
 
 	// title text
 	op := &text.DrawOptions{}
-	op.GeoM.Translate(ScreenWidth/2, 3*titleFontSize)
+	op.GeoM.Translate(ScreenWidth/2, titleFontSize*2)
 	op.ColorScale.ScaleWithColor(color.White)
 	op.LineSpacing = titleFontSize
 	op.PrimaryAlign = text.AlignCenter
@@ -81,7 +81,7 @@ func PlayMenu(counter, wave uint, world *ecs.World, screen *ebiten.Image) {
 
 	// body text
 	op = &text.DrawOptions{}
-	op.GeoM.Translate(ScreenWidth/2, 3*titleFontSize)
+	op.GeoM.Translate(ScreenWidth/2, titleFontSize*3)
 	op.ColorScale.ScaleWithColor(color.White)
 	op.LineSpacing = fontSize
 	op.PrimaryAlign = text.AlignCenter
@@ -93,7 +93,7 @@ func PlayMenu(counter, wave uint, world *ecs.World, screen *ebiten.Image) {
 
 func OverMenu(counter, wave uint, screen *ebiten.Image) {
 	title := "GAME OVER!"
-	body := fmt.Sprintf("\n\n\nWAVE: %d\nCRABS DISPATCHED: %d\n\n\n", wave, counter)
+	body := fmt.Sprintf("\n\n\nWAVE: %d\nCRABS DISPATCHED: %d\n\n\nESC or ENTER to CONTINUE", wave, counter)
 
 	// title text
 	op := &text.DrawOptions{}
