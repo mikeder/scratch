@@ -123,7 +123,6 @@ func (g *Game) Update() error {
 		player := NewGopher(gid, g.center)
 		g.world.Write(gid, ecs.C(player))
 		g.playerAdded = true
-		time.Sleep(time.Millisecond * 200)
 	}
 
 	ReadInputs(g.input)
