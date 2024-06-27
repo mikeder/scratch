@@ -35,6 +35,7 @@ type input struct {
 	cursor Vec2
 
 	enter bool
+	reset bool
 	exit  bool
 }
 
@@ -54,8 +55,7 @@ type Game struct {
 	// state
 	gameState   GameState
 	playerAdded bool
-	// playerHealth Health
-	crabsKilled uint
+	score       uint
 	nextWave    uint
 	waveNum     uint
 	tree        *kdtree.KDTree
@@ -82,9 +82,9 @@ func NewGame() *Game {
 		window:    window{ScreenWidth, ScreenHeight},
 		world:     ecs.NewWorld(),
 
-		crabsKilled: 0,
-		nextWave:    100,
-		waveNum:     1,
+		score:    0,
+		nextWave: 100,
+		waveNum:  1,
 
 		bulletTicker:           time.NewTicker(bulletTickStart),
 		currentBulletTickD:     bulletTickStart,
@@ -127,7 +127,7 @@ func (g *Game) Update() error {
 		MoveCrabs(g.world)
 		BulletHitsCrab(g.tree, g.world)
 		BulletHitsGopher(g.world)
-		KillCrabs(&g.crabsKilled, g.world)
+		KillCrabs(&g.score, g.world)
 		DeleteCrabs(g.world)
 		CrabShoots(g.tree, g.crabBulletTicker, g.world)
 		KillGopher(&g.gameState, g.tree, g.world)
@@ -137,7 +137,7 @@ func (g *Game) Update() error {
 			g.gameState = GameStateMenu
 		}
 	case GameStateOver:
-		if g.input.enter || g.input.exit {
+		if g.input.reset || g.input.exit {
 			g.gameState = GameStateMenu
 		}
 	default:
@@ -162,13 +162,13 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		DrawGopher(screen, g.op, g.world)
 		DrawCrabs(screen, g.op, g.world)
 		DrawBullets(screen, g.op, g.world)
-		PlayMenu(g.crabsKilled, g.waveNum, g.world, screen)
+		PlayMenu(g.score, g.waveNum, g.world, screen)
 	case GameStateOver:
 		DrawWorld(screen, g.op)
 		DrawGopher(screen, g.op, g.world)
 		DrawCrabs(screen, g.op, g.world)
 		DrawBullets(screen, g.op, g.world)
-		OverMenu(g.crabsKilled, g.waveNum, screen)
+		OverMenu(g.score, g.waveNum, screen)
 	default:
 		// do stuff
 	}
@@ -197,14 +197,17 @@ func (g *Game) Reset() {
 	g.bulletTicker.Reset(bulletTickStart)
 	g.currentBulletTickD = bulletTickStart
 
-	g.crabsKilled = 0
+	g.score = 0
 	g.crabTicker.Reset(crabTickStart)
 	g.currentCrabTickD = crabTickStart
+
+	g.crabBulletTicker.Reset(crabBulletTickStart)
+	g.currentCrabBulletTickD = crabBulletTickStart
 }
 
 func (g *Game) UpdateWave() {
 	current := g.nextWave
-	if g.crabsKilled >= current {
+	if g.score >= current {
 		g.nextWave = current * 2
 		g.waveNum += 1
 

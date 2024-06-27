@@ -93,7 +93,7 @@ func PlayMenu(counter, wave uint, world *ecs.World, screen *ebiten.Image) {
 
 func OverMenu(counter, wave uint, screen *ebiten.Image) {
 	title := "GAME OVER!"
-	body := fmt.Sprintf("\n\n\nWAVE: %d\nCRABS DISPATCHED: %d\n\n\nESC or ENTER to CONTINUE", wave, counter)
+	body := fmt.Sprintf("\n\n\nWAVE: %d\nCRABS DISPATCHED: %d\n\n\nR to RESET", wave, counter)
 
 	// title text
 	op := &text.DrawOptions{}

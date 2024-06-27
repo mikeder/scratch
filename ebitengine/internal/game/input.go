@@ -56,6 +56,14 @@ func ReadInputs(input *input) {
 		input.enter = false
 	}
 
+	// RESET
+	if keyPress(ebiten.KeyR) {
+		input.reset = true
+	}
+	if keyRelease(ebiten.KeyR) {
+		input.reset = false
+	}
+
 	// EXIT
 	if keyPress(ebiten.KeyEscape) || keyPress(ebiten.KeyDelete) {
 		input.exit = true
