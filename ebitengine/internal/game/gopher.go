@@ -97,6 +97,23 @@ func BulletHitsGopher(world *ecs.World) {
 	})
 }
 
+func GopherPickupHealth(world *ecs.World) {
+	pickups := ecs.Query1[HealthPickup](world)
+	gopher := ecs.Query1[Gopher](world)
+
+	var player *Gopher
+	gopher.MapId(func(id ecs.Id, a *Gopher) {
+		player = a
+	})
+
+	pickups.MapId(func(bid ecs.Id, h *HealthPickup) {
+		if h.pos.Distance(player.pos) < float64(player.image.Bounds().Dy()/4) {
+			player.health.Add(25)
+			ecs.Delete(world, h.id)
+		}
+	})
+}
+
 func KillGopher(gs *GameState, tree *kdtree.KDTree, world *ecs.World) {
 	q := ecs.Query1[Gopher](world)
 

@@ -24,6 +24,8 @@ const (
 	crabTickEnd         = 50 * time.Millisecond
 	crabBulletTickStart = 5 * time.Second
 	crabBulletTickEnd   = 50 * time.Millisecond
+	healthTick          = 10 * time.Second
+	treeUpdateTick      = 40 * time.Millisecond
 )
 
 type input struct {
@@ -58,17 +60,37 @@ type Game struct {
 	score       uint
 	nextWave    uint
 	waveNum     uint
+	tickers     *Tickers
 	tree        *kdtree.KDTree
 	world       *ecs.World
+}
 
-	// tickers
-	bulletTicker           *time.Ticker
-	currentBulletTickD     time.Duration
-	crabTicker             *time.Ticker
-	currentCrabTickD       time.Duration
+type Tickers struct {
+	bulletTicker       *time.Ticker
+	currentBulletTickD time.Duration
+
+	crabTicker       *time.Ticker
+	currentCrabTickD time.Duration
+
 	crabBulletTicker       *time.Ticker
 	currentCrabBulletTickD time.Duration
-	treeTicker             *time.Ticker
+
+	healthTicker *time.Ticker
+
+	treeUpdateTicker *time.Ticker
+}
+
+func NewTickers() *Tickers {
+	return &Tickers{
+		bulletTicker:           time.NewTicker(bulletTickStart),
+		currentBulletTickD:     bulletTickStart,
+		crabTicker:             time.NewTicker(crabTickStart),
+		currentCrabTickD:       crabTickStart,
+		crabBulletTicker:       time.NewTicker(crabBulletTickStart),
+		currentCrabBulletTickD: crabBulletTickStart,
+		healthTicker:           time.NewTicker(healthTick),
+		treeUpdateTicker:       time.NewTicker(treeUpdateTick),
+	}
 }
 
 var _ ebiten.Game = (*Game)(nil)
@@ -86,13 +108,7 @@ func NewGame() *Game {
 		nextWave: 100,
 		waveNum:  1,
 
-		bulletTicker:           time.NewTicker(bulletTickStart),
-		currentBulletTickD:     bulletTickStart,
-		crabTicker:             time.NewTicker(crabTickStart),
-		currentCrabTickD:       crabTickStart,
-		crabBulletTicker:       time.NewTicker(crabBulletTickStart),
-		currentCrabBulletTickD: crabBulletTickStart,
-		treeTicker:             time.NewTicker(time.Millisecond * 40),
+		tickers: NewTickers(),
 	}
 	return g
 }
@@ -119,9 +135,11 @@ func (g *Game) Update() error {
 			g.gameState = GameStatePlaying
 		}
 	case GameStatePlaying:
-		SpawnCrabs(g.crabTicker, g.world)
+		SpawnCrabs(g.tickers.crabTicker, g.world)
+		SpawnHealth(g.tickers.healthTicker, g.world)
 		MoveGopher(g.input, g.world)
-		SpawnBullets(g.center, g.bulletTicker, g.input, g.world)
+		GopherPickupHealth(g.world)
+		SpawnBullets(g.center, g.tickers.bulletTicker, g.input, g.world)
 		MoveBullets(g.world)
 		ExpireBullets(g.world)
 		MoveCrabs(g.world)
@@ -129,9 +147,9 @@ func (g *Game) Update() error {
 		BulletHitsGopher(g.world)
 		KillCrabs(&g.score, g.world)
 		DeleteCrabs(g.world)
-		CrabShoots(g.tree, g.crabBulletTicker, g.world)
+		CrabShoots(g.tree, g.tickers.crabBulletTicker, g.world)
 		KillGopher(&g.gameState, g.tree, g.world)
-		UpdateKDTree(g.tree, g.treeTicker, g.world)
+		UpdateKDTree(g.tree, g.tickers.treeUpdateTicker, g.world)
 		g.UpdateWave()
 		if g.input.exit {
 			g.gameState = GameStateMenu
@@ -159,6 +177,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		StartMenu(screen)
 	case GameStatePlaying:
 		DrawWorld(screen, g.op)
+		DrawHealth(screen, g.op, g.world)
 		DrawGopher(screen, g.op, g.world)
 		DrawCrabs(screen, g.op, g.world)
 		DrawBullets(screen, g.op, g.world)
@@ -177,32 +196,31 @@ func (g *Game) Draw(screen *ebiten.Image) {
 }
 
 func (g *Game) Reset() {
-	q1 := ecs.Query1[Projectile](g.world)
-	q2 := ecs.Query1[Crab](g.world)
-	q3 := ecs.Query1[Gopher](g.world)
+	q1 := ecs.Query1[Crab](g.world)
+	q1.MapId(func(id ecs.Id, c *Crab) {
+		ecs.Delete(g.world, id)
+	})
 
-	q1.MapId(func(id ecs.Id, b *Projectile) {
+	q2 := ecs.Query1[Gopher](g.world)
+	q2.MapId(func(id ecs.Id, c *Gopher) {
 		ecs.Delete(g.world, id)
 	})
-	q2.MapId(func(id ecs.Id, c *Crab) {
+
+	q3 := ecs.Query1[HealthPickup](g.world)
+	q3.MapId(func(id ecs.Id, p *HealthPickup) {
 		ecs.Delete(g.world, id)
 	})
-	q3.MapId(func(id ecs.Id, p *Gopher) {
+
+	q4 := ecs.Query1[Projectile](g.world)
+	q4.MapId(func(id ecs.Id, p *Projectile) {
 		ecs.Delete(g.world, id)
 	})
 
 	g.playerAdded = false
-	g.waveNum = 1
 	g.nextWave = 100
-	g.bulletTicker.Reset(bulletTickStart)
-	g.currentBulletTickD = bulletTickStart
-
 	g.score = 0
-	g.crabTicker.Reset(crabTickStart)
-	g.currentCrabTickD = crabTickStart
-
-	g.crabBulletTicker.Reset(crabBulletTickStart)
-	g.currentCrabBulletTickD = crabBulletTickStart
+	g.tickers = NewTickers()
+	g.waveNum = 1
 }
 
 func (g *Game) UpdateWave() {
@@ -212,28 +230,28 @@ func (g *Game) UpdateWave() {
 		g.waveNum += 1
 
 		// bullet ticker
-		qd := g.currentBulletTickD.Nanoseconds() / 4
-		bd := time.Duration(g.currentBulletTickD.Nanoseconds() - qd)
+		qd := g.tickers.currentBulletTickD.Nanoseconds() / 4
+		bd := time.Duration(g.tickers.currentBulletTickD.Nanoseconds() - qd)
 		if bd <= bulletTickEnd {
 			bd = bulletTickEnd
 		}
-		g.currentBulletTickD = bd
-		g.bulletTicker.Reset(bd)
+		g.tickers.currentBulletTickD = bd
+		g.tickers.bulletTicker.Reset(bd)
 
 		// crab ticker
-		cd := time.Duration(g.currentCrabTickD.Nanoseconds() / 2)
+		cd := time.Duration(g.tickers.currentCrabTickD.Nanoseconds() / 2)
 		if cd < crabTickEnd {
 			cd = crabTickStart
 		}
-		g.currentCrabTickD = cd
-		g.crabTicker.Reset(cd)
+		g.tickers.currentCrabTickD = cd
+		g.tickers.crabTicker.Reset(cd)
 
 		// crab bullet ticker
-		cbd := time.Duration(g.currentCrabBulletTickD.Nanoseconds() / 2)
+		cbd := time.Duration(g.tickers.currentCrabBulletTickD.Nanoseconds() / 2)
 		if cbd < crabBulletTickEnd {
 			cbd = crabBulletTickStart
 		}
-		g.currentCrabBulletTickD = cbd
-		g.crabBulletTicker.Reset(cbd)
+		g.tickers.currentCrabBulletTickD = cbd
+		g.tickers.crabBulletTicker.Reset(cbd)
 	}
 }
