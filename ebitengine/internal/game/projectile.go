@@ -16,7 +16,7 @@ const (
 	teamGopher int = iota
 	teamCrab
 
-	bulletSpeed    float64       = 16.0
+	bulletSpeed    float64       = 16.0 * 0.005
 	bulletLifetime time.Duration = 5 * time.Second
 )
 
@@ -99,7 +99,7 @@ func NewCrabBullet(oid, pid ecs.Id, pos Vec2, dir Vec2) Projectile {
 		image:   crabBulletImage,
 		pos:     pos,
 		dir:     dir,
-		speed:   bulletSpeed / 5,
+		speed:   bulletSpeed / 6,
 		expires: time.Now().Add(bulletLifetime),
 		team:    teamCrab,
 	}
@@ -138,8 +138,8 @@ func MoveBullets(world *ecs.World) {
 	q := ecs.Query1[Projectile](world)
 
 	q.MapId(func(id ecs.Id, a *Projectile) {
-		a.pos.X -= a.dir.X * a.speed * 0.005
-		a.pos.Y -= a.dir.Y * a.speed * 0.005
+		a.pos.X -= a.dir.X * a.speed
+		a.pos.Y -= a.dir.Y * a.speed
 	})
 }
 

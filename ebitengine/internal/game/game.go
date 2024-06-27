@@ -23,7 +23,7 @@ const (
 	crabTickStart       = 500 * time.Millisecond
 	crabTickEnd         = 50 * time.Millisecond
 	crabBulletTickStart = 5 * time.Second
-	crabBulletTickEnd   = 50 * time.Millisecond
+	crabBulletTickEnd   = 100 * time.Millisecond
 	healthTick          = 10 * time.Second
 	treeUpdateTick      = 40 * time.Millisecond
 )
