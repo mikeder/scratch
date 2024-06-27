@@ -17,4 +17,7 @@ var (
 	GoBullet1_png []byte
 	//go:embed assets/gobullet2.png
 	GoBullet2_png []byte
+
+	//go:embed assets/ebiten0.png
+	Ebiten_png []byte
 )
