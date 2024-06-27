@@ -2,11 +2,14 @@ package game
 
 import (
 	"bytes"
+	"fmt"
 	"image"
+	"image/color"
 	"log"
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/text/v2"
 	"github.com/unitoftime/ecs"
 )
 
@@ -93,4 +96,46 @@ func DrawHealth(screen *ebiten.Image, op *ebiten.DrawImageOptions, world *ecs.Wo
 		screen.DrawImage(h.img, op)
 	})
 
+}
+
+type HealthText struct {
+	amount int
+	addedT time.Time
+	pos    Vec2
+}
+
+func NewHealthText(amount int, pos Vec2) HealthText {
+	return HealthText{
+		amount: amount,
+		addedT: time.Now(),
+		pos:    pos,
+	}
+}
+
+func DrawHealthText(screen *ebiten.Image, world *ecs.World) {
+	q := ecs.Query1[HealthText](world)
+
+	q.MapId(func(id ecs.Id, a *HealthText) {
+		if time.Since(a.addedT) > time.Millisecond*300 {
+			ecs.Delete(world, id)
+		}
+
+		var txt string
+		op := &text.DrawOptions{}
+		if a.amount > 0 {
+			txt = fmt.Sprintf("+%d", a.amount)
+			op.ColorScale.ScaleWithColor(color.NRGBA{50, 255, 50, 255})
+		} else {
+			txt = fmt.Sprintf("%d", a.amount)
+			op.ColorScale.ScaleWithColor(color.NRGBA{255, 50, 50, 255})
+		}
+
+		op.GeoM.Translate(a.pos.X, a.pos.Y)
+		op.LineSpacing = 24
+		op.PrimaryAlign = text.AlignEnd
+		text.Draw(screen, txt, &text.GoTextFace{
+			Source: textFaceSource,
+			Size:   fontSize,
+		}, op)
+	})
 }

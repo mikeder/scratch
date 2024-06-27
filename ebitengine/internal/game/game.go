@@ -181,6 +181,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		DrawGopher(screen, g.op, g.world)
 		DrawCrabs(screen, g.op, g.world)
 		DrawBullets(screen, g.op, g.world)
+		DrawHealthText(screen, g.world)
 		PlayMenu(g.score, g.waveNum, g.world, screen)
 	case GameStateOver:
 		DrawWorld(screen, g.op)

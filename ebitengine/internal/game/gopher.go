@@ -93,6 +93,9 @@ func BulletHitsGopher(world *ecs.World) {
 		if b.pos.Distance(player.pos) < float64(player.image.Bounds().Dy()/4) {
 			player.health.Remove(25)
 			ecs.Delete(world, b.pid)
+
+			hid := world.NewId()
+			ecs.Write(world, hid, ecs.C(NewHealthText(-25, player.pos)))
 		}
 	})
 }
@@ -108,8 +111,11 @@ func GopherPickupHealth(world *ecs.World) {
 
 	pickups.MapId(func(bid ecs.Id, h *HealthPickup) {
 		if h.pos.Distance(player.pos) < float64(player.image.Bounds().Dy()/4) {
-			player.health.Add(25)
 			ecs.Delete(world, h.id)
+
+			player.health.Add(25)
+			hid := world.NewId()
+			ecs.Write(world, hid, ecs.C(NewHealthText(25, player.pos)))
 		}
 	})
 }
@@ -133,6 +139,9 @@ func KillGopher(gs *GameState, tree *kdtree.KDTree, world *ecs.World) {
 				}
 				c.health.Remove(50)
 				g.health.Remove(50)
+
+				hid := world.NewId()
+				ecs.Write(world, hid, ecs.C(NewHealthText(-50, g.pos)))
 			}
 
 			if *g.health <= playerDeadHealth {
