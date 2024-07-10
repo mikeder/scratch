@@ -6,18 +6,25 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-//go:embed shader.kage
-var shaderProgram []byte
+//go:embed sun.kage
+var sunShader []byte
+
+//go:embed water.kage
+var waterShader []byte
 
 func main() {
-	// compile the shader
-	shader, err := ebiten.NewShader(shaderProgram)
+	// compile the shader(s)
+	sun, err := ebiten.NewShader(sunShader)
+	if err != nil {
+		panic(err)
+	}
+	water, err := ebiten.NewShader(waterShader)
 	if err != nil {
 		panic(err)
 	}
 
 	// create game struct
-	game := &Game{shader: shader}
+	game := &Game{sun: sun, water: water}
 
 	// configure window and run game
 	ebiten.SetWindowTitle("Retro Sun")
@@ -30,8 +37,9 @@ func main() {
 
 // Struct implementing the ebiten.Game interface.
 type Game struct {
-	shader *ebiten.Shader
-	time   int
+	sun   *ebiten.Shader
+	water *ebiten.Shader
+	time  int
 }
 
 // Assume a fixed layout.
@@ -55,6 +63,12 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		"Time":       float32(g.time) / 120,
 	}
 
-	// draw shader
-	screen.DrawRectShader(w, h, g.shader, op)
+	// draw sun
+	screen.DrawRectShader(w, h, g.sun, op)
+
+	cap := ebiten.NewImageFromImage(screen)
+	op.Images[0] = cap
+
+	// draw water
+	screen.DrawRectShader(w, h, g.water, op)
 }

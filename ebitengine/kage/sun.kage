@@ -24,7 +24,7 @@ func Fragment(targetCoords vec4, _ vec2, _ vec4) vec4 {
 // adapted from https://www.shadertoy.com/view/Wt33Wf
 func sun(uv vec2, battery float) float {
     val := smoothstep(0.3, 0.29, length(uv))
-    bloom := smoothstep(0.7, 0.0, length(uv))
+    bloom := smoothstep(0.9, 0.0, length(uv))
     cut := 3.0 * sin((uv.y + Time * 0.2 * (battery +0.02))* 100.0)+ clamp(uv.y * 14.0+1.0, -6.0,6.0)
     cut = clamp(cut, 0.0, 1.0)
     return clamp(val*cut, 0.0, 1.0) + bloom * 0.6
