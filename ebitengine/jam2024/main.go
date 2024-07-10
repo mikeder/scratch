@@ -8,7 +8,7 @@ import (
 	"runtime/pprof"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/mikeder/scratchygo/ebitengine/internal/game"
+	"github.com/mikeder/scratchygo/ebitengine/jam2024/internal/game"
 )
 
 var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
