@@ -66,6 +66,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	// draw sun
 	screen.DrawRectShader(w, h, g.sun, op)
 
+	// capture current screen
 	cap := ebiten.NewImageFromImage(screen)
 	op.Images[0] = cap
 
