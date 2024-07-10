@@ -1,0 +1,47 @@
+//kage:unit pixels
+package main
+
+var Center vec2 // uniform: circle center coords
+var Radius float
+var Resolution vec2
+
+var Time float
+
+// func Fragment(targetCoords vec4, _ vec2, _ vec4) vec4 {
+// 	distToCenter := distance(Center, targetCoords.xy)
+// 	distToEdge   := distToCenter - Radius
+
+// 	// dist to edge will be negative if we are inside the
+// 	// circle and positive if we are outside, but we want to 
+// 	// preserve the circle color if we are inside (multiply
+// 	// by one), and discard it if we are outside (multiply
+// 	// by zero), so we need to change the sign and clamp
+// 	factor := clamp(-distToEdge, 0, 1)
+// 	return vec4(0, 0.5, 1, 1)*factor
+// }
+func Fragment(targetCoords vec4, _ vec2, _ vec4) vec4 {
+
+    uv := (2.0 * targetCoords.xy - Resolution.xy)/Resolution.y
+    battery := 1.0
+
+    sunUV := -uv
+    // sunUV += vec2(0.75, 0.2)
+    col := vec3(1.0, 0.2, 1.0)
+    sunVal := sun(sunUV, battery)
+
+    col = mix(col, vec3(1.0, 0.4, 0.1), sunUV.y * 2.0 + 0.2)
+    col = mix(col, vec3(1.0, 0.4, 0.1), sunUV.y * 2.0 + 0.2)
+    // col = mix(col, vec3(1.0, 0.4, 0.1), sunUV.y * 2.0 + 0.2)
+    col = mix(vec3(0.0, 0.0, 0.0), col, sunVal)
+
+	return vec4(col, 1.0)
+}
+
+// adapted from https://www.shadertoy.com/view/Wt33Wf
+func sun(uv vec2, battery float) float {
+    val := smoothstep(0.3, 0.29, length(uv))
+    bloom := smoothstep(0.7, 0.0, length(uv))
+    cut := 3.0 * sin((uv.y + Time * 0.2 * (battery +0.02))* 100.0)+ clamp(uv.y * 14.0+1.0, -6.0,6.0)
+    cut = clamp(cut, 0.0, 1.0)
+    return clamp(val*cut, 0.0, 1.0) + bloom * 0.6
+}

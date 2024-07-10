@@ -1,6 +1,6 @@
 .DEFAULT_GOAL = copy
 
-build_targets := ebitengine glitch
+build_targets := ebitengine/jam2024 ebitengine/kage glitch
 
 wasm_exec.js:
 	cp "$(shell go env GOROOT)/misc/wasm/wasm_exec.js" ./server/assets/shared/

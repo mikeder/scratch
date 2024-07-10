@@ -3,7 +3,7 @@ package game_test
 import (
 	"testing"
 
-	"github.com/mikeder/scratchygo/ebitengine/internal/game"
+	"github.com/mikeder/scratchygo/ebitengine/jam2024/internal/game"
 )
 
 func TestHealth(t *testing.T) {
