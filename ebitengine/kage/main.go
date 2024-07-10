@@ -29,6 +29,7 @@ func main() {
 	// configure window and run game
 	ebiten.SetWindowTitle("Retro Sun")
 	ebiten.SetWindowSize(1024, 720)
+	ebiten.SetWindowResizable(true)
 	err = ebiten.RunGame(game)
 	if err != nil {
 		panic(err)
