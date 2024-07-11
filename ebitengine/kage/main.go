@@ -117,18 +117,6 @@ func (g *Game) Layout(_, _ int) (int, int) {
 // No logic to update.
 func (g *Game) Update() error {
 	g.time++
-	if ebiten.IsKeyPressed(ebiten.KeyL) {
-		g.res = Resolutions.low
-		g.offscreen = ebiten.NewImage(g.res[0], g.res[1])
-	}
-	if ebiten.IsKeyPressed(ebiten.KeyM) {
-		g.res = Resolutions.med
-		g.offscreen = ebiten.NewImage(g.res[0], g.res[1])
-	}
-	if ebiten.IsKeyPressed(ebiten.KeyH) {
-		g.res = Resolutions.high
-		g.offscreen = ebiten.NewImage(g.res[0], g.res[1])
-	}
 	return nil
 }
 
