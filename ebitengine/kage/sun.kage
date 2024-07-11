@@ -6,7 +6,6 @@ var Resolution vec2
 var Time float
 
 func Fragment(targetCoords vec4, _ vec2, _ vec4) vec4 {
-
     uv := (2.0 * targetCoords.xy - Resolution.xy)/Resolution.y
     battery := 1.0
 
@@ -15,10 +14,10 @@ func Fragment(targetCoords vec4, _ vec2, _ vec4) vec4 {
     sunVal := sun(sunUV, battery)
 
     col = mix(col, vec3(1.0, 0.4, 0.1), sunUV.y * 2.0 + 0.2)
-    col = mix(col, vec3(1.0, 0.4, 0.1), sunUV.y * 2.0 + 0.2) // amplify colors
+    // col = mix(col, vec3(1.0, 0.4, 0.1), sunUV.y * 2.0 + 0.2) // amplify colors
     col = mix(vec3(0.0, 0.0, 0.0), col, sunVal)
 
-	return vec4(col, 1.0)
+	return vec4(col, 0.85)
 }
 
 // adapted from https://www.shadertoy.com/view/Wt33Wf
