@@ -29,7 +29,7 @@ func Fragment(dstPos vec4, srcPos vec2, color vec4) vec4 {
 	}
 
 	xoffset := 4 * cos(Time*3+pos.y/10)
-	yoffset := 20 * (1 + cos(Time*3+pos.y/40))
+	yoffset := 5 * (1 + cos(Time*3+pos.y/40))
 	srcOrigin := imageSrc0Origin()
 	clr := imageSrc0At(vec2(
 		srcPos.x+xoffset,
