@@ -84,8 +84,9 @@ func run() error {
 	}
 
 	// create game struct
-	res := Resolutions.low
-	game := &Game{res: res, stars: stars, sun: sun, water: water}
+	res := Resolutions.high
+	offscreen := ebiten.NewImage(res[0], res[1])
+	game := &Game{offscreen: offscreen, res: res, stars: stars, sun: sun, water: water}
 
 	// configure window and run game
 	ebiten.SetWindowTitle("Retro Sun")
@@ -100,11 +101,12 @@ func run() error {
 
 // Struct implementing the ebiten.Game interface.
 type Game struct {
-	res   [2]int
-	stars *ebiten.Shader
-	sun   *ebiten.Shader
-	water *ebiten.Shader
-	time  int
+	res       [2]int
+	offscreen *ebiten.Image
+	stars     *ebiten.Shader
+	sun       *ebiten.Shader
+	water     *ebiten.Shader
+	time      int
 }
 
 // Assume a fixed layout.
@@ -117,19 +119,22 @@ func (g *Game) Update() error {
 	g.time++
 	if ebiten.IsKeyPressed(ebiten.KeyL) {
 		g.res = Resolutions.low
+		g.offscreen = ebiten.NewImage(g.res[0], g.res[1])
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyM) {
 		g.res = Resolutions.med
+		g.offscreen = ebiten.NewImage(g.res[0], g.res[1])
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyH) {
 		g.res = Resolutions.high
+		g.offscreen = ebiten.NewImage(g.res[0], g.res[1])
 	}
 	return nil
 }
 
 // Core drawing function from where we call DrawTrianglesShader.
 func (g *Game) Draw(screen *ebiten.Image) {
-	w, h := screen.Bounds().Dx(), screen.Bounds().Dy()
+	w, h := g.offscreen.Bounds().Dx(), g.offscreen.Bounds().Dy()
 
 	op := &ebiten.DrawRectShaderOptions{}
 	op.Uniforms = map[string]any{
@@ -138,13 +143,13 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	}
 
 	// draw stars
-	screen.DrawRectShader(w, h, g.stars, op)
+	g.offscreen.DrawRectShader(w, h, g.stars, op)
 
 	// draw sun
-	screen.DrawRectShader(w, h, g.sun, op)
+	g.offscreen.DrawRectShader(w, h, g.sun, op)
 
 	// capture current screen
-	op.Images[0] = ebiten.NewImageFromImage(screen)
+	op.Images[0] = g.offscreen
 
 	// draw water
 	screen.DrawRectShader(w, h, g.water, op)
