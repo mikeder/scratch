@@ -23,13 +23,13 @@ func init() {
 	Resolutions.high = [2]int{3840, 2160}
 }
 
-//go:embed sun.kage
+//go:embed sun.kage.go
 var sunShader []byte
 
-//go:embed stars.kage
+//go:embed stars.kage.go
 var starsShader []byte
 
-//go:embed water.kage
+//go:embed water.kage.go
 var waterShader []byte
 
 func main() {
